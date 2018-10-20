@@ -7,6 +7,7 @@ import com.theprophet31337.prophecy.analyser.symboltable.symbol.MethodSymbol;
 import com.theprophet31337.prophecy.analyser.symboltable.symbol.Symbol;
 import com.theprophet31337.prophecy.exception.ProphecyNotImplementedException;
 import com.theprophet31337.prophecy.generator.GeneratorTargetSpecifics;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,12 +45,7 @@ public class LlvmIrGeneratorTargetSpecifics implements GeneratorTargetSpecifics
 	@Override
 	public String getIdentifierName(String... nameParts)
 	{
-		StringBuilder builder = new StringBuilder();
-
-		for (String namePart : nameParts)
-			builder.append(namePart + '$');
-
-		return builder.toString();
+		return StringUtils.join(nameParts, '$');
 	}
 
 	@Override

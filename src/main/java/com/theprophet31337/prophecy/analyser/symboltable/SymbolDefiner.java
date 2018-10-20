@@ -71,9 +71,12 @@ public class SymbolDefiner extends ProphecyAstBaseListener
 
 		systemClass = new ClassSymbol(Constants.SYSTEM_CLASS_NAME, currentScope, null);
 		systemClass.setSystem(true);
+
 		system_println = new MethodSymbol(Constants.SYSTEM_PRINTLN_METHODSIGNATURE.getName(), BuiltInTypeSymbol.tVoid, systemClass, new LocalScope(system_println));
+		system_println.setStatic(true);
 		system_println.putMember(new VariableSymbol(Constants.SYSTEM_PRINTLN_PARAM_NAME, BuiltInTypeSymbol.tInt));
 		systemClass.putMember(system_println);
+
 		currentScope.define(systemClass);
 	}
 

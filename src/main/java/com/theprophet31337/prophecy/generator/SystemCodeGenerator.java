@@ -24,7 +24,7 @@ public class SystemCodeGenerator
 
 	public void generateSystemClass(FlatGlobalScope flatGlobalScope, ClassSymbol classSymbol)
 	{
-		for (MethodSymbol method : classSymbol.getMethods())
+		for (MethodSymbol method : classSymbol.getInstanceMethods())
 			generateSystemMethod(flatGlobalScope, method);
 	}
 
@@ -42,8 +42,10 @@ public class SystemCodeGenerator
 
 		Function function = new Function(name, returnType);
 
-		String className = targetSpecifics.getPointerTypeName(method.getParentClass().getName());
-		function.addParameter(new FlatSymbol("this", className));
+		if (!method.isStatic()) {
+			String className = targetSpecifics.getPointerTypeName(method.getParentClass().getName());
+			function.addParameter(new FlatSymbol("this", className));
+		}
 
 		String parameterName;
 		String parameterType;
@@ -67,11 +69,11 @@ public class SystemCodeGenerator
 		String printfStrId = "@" + Constants.SYSTEM_CLASS_NAME + "$println$int$printf";
 
 		flatGlobalScope.addCustomStartCode(printfStrId + " = internal constant [4 x i8] c\"%d\\0A\\00\"\n");
-		flatGlobalScope.addCustomStartCode("declare i32 @printf(i8 *, ...)");
+		flatGlobalScope.addCustomStartCode("declare i32 @printf(i8*, ...)");
 
-		String methodBody = "%_t1 = getelementptr [4 x i8]* " + printfStrId + ", i64 0, i64 0\n" +
-				"%_t2 = load i32* %" + Constants.SYSTEM_PRINTLN_PARAM_NAME + "\n" +
-				"call i32 (i8 *, ...)* @printf(i8* %_t1, i32 %_t2)\n" +
+		String methodBody = "%_t1 = getelementptr [4 x i8], [4 x i8]* " + printfStrId + ", i64 0, i64 0\n" +
+				"%_t2 = load i32, i32* %" + Constants.SYSTEM_PRINTLN_PARAM_NAME + "\n" +
+				"call i32 (i8*, ...) @printf(i8* %_t1, i32 %_t2)\n" +
 				"ret void\n";
 
 		function.setInstructions(methodBody);

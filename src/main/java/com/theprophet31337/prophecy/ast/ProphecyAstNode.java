@@ -3,7 +3,7 @@ package com.theprophet31337.prophecy.ast;
 import com.theprophet31337.prophecy.analyser.symboltable.Type;
 import com.theprophet31337.prophecy.analyser.symboltable.scope.Scope;
 import com.theprophet31337.prophecy.analyser.symboltable.symbol.Symbol;
-import com.theprophet31337.prophecy.util.GenericUtil;
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -176,7 +176,7 @@ public class ProphecyAstNode
 		if (getChildCount() == 0) {
 			if (forceNewLine) {
 				ret.append("\r\n");
-				ret.append(GenericUtil.repeat("\t", tabNumber));
+				ret.append(StringUtils.repeat("\t", tabNumber));
 			}
 
 			ret.append(getText() + "<" + getType().name() + ">");
@@ -189,7 +189,7 @@ public class ProphecyAstNode
 		if (tabNumber != 0)
 			ret.append("\r\n");
 
-		ret.append(GenericUtil.repeat("\t", tabNumber));
+		ret.append(StringUtils.repeat("\t", tabNumber));
 		ret.append("(");
 		ret.append(getText() + getAttributeString() + " ");
 
@@ -212,7 +212,7 @@ public class ProphecyAstNode
 
 		if (hasChildTree) {
 			ret.append("\r\n");
-			ret.append(GenericUtil.repeat("\t", tabNumber - 1));
+			ret.append(StringUtils.repeat("\t", tabNumber - 1));
 		}
 
 		ret.append(")");

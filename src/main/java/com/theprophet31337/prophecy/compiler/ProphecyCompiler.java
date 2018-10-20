@@ -32,7 +32,6 @@ public class ProphecyCompiler
 		try {
 			System.out.println("Building AST...");
 			astRoot = parser.parse();
-			System.out.println(astRoot.toStringTree());
 		} catch (ProphecyParserException e) {
 			System.err.println(e.getMessage());
 			return;
@@ -46,7 +45,6 @@ public class ProphecyCompiler
 		System.out.println("Performing Type Analysis and Check...");
 		TypeAnalyser typeAnalyser = new TypeAnalyser(astRoot);
 		typeAnalyser.analyseAndAnotate();
-		System.out.println(astRoot.toStringTree());
 
 		System.out.println("Generating LLVM IR...");
 		ProphecyGenerator generator = new ProphecyGenerator(globalScope);

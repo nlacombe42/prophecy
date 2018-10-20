@@ -53,7 +53,7 @@ public class ProphecyGenerator
 		ProphecyMethodBodyGenerator methodBodyGenerator = new ProphecyMethodBodyGenerator(templates,
 				targetSpecifics, buildListener);
 
-		methodBodyGenerator.generateBlock(function.getMethodBodyBlockNode());
+		methodBodyGenerator.generateMethodBody(function);
 
 		function.setInstructions(methodBodyGenerator.getOutput());
 	}

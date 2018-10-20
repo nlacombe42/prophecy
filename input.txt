@@ -1,0 +1,25 @@
+class Prophecy
+{
+	// int test;
+	
+	char addChar(char a, char b)
+	{
+		return a+b;
+	}
+	
+	int add(int a, int b)
+	{
+		return a+b;
+	}
+
+	static main()
+	{
+		// Prophecy p;
+		int a=2;
+		int b=5;
+		
+		// system.println(p.add(a, b));
+
+		system.println(a+b);
+	}
+}

@@ -6,6 +6,7 @@ import com.theprophet31337.prophecy.analyser.symboltable.symbol.ClassSymbol;
 import com.theprophet31337.prophecy.analyser.symboltable.symbol.MethodSymbol;
 import com.theprophet31337.prophecy.analyser.symboltable.symbol.Symbol;
 import com.theprophet31337.prophecy.analyser.symboltable.symbol.VariableSymbol;
+import com.theprophet31337.prophecy.ast.ProphecyAstNode;
 import com.theprophet31337.prophecy.ast.nodewrapper.AstMethodDef;
 import com.theprophet31337.prophecy.constants.Constants;
 import com.theprophet31337.prophecy.generator.flatmodel.FlatGlobalScope;
@@ -61,8 +62,11 @@ public class FlatModelTranslator
 
 		flatGlobalScope.addStructure(classStructure);
 
-		for (MethodSymbol method : classSymbol.getMethods())
-			flatGlobalScope.addFunction(translateMethod(classSymbol, method));
+		for (MethodSymbol staticMethod : classSymbol.getStaticMethods())
+			flatGlobalScope.addFunction(translateMethod(classSymbol, staticMethod));
+
+		for (MethodSymbol instanceMethod : classSymbol.getInstanceMethods())
+			flatGlobalScope.addFunction(translateMethod(classSymbol, instanceMethod));
 	}
 
 	private Function translateMethod(ClassSymbol classSymbol, MethodSymbol method)
@@ -79,15 +83,18 @@ public class FlatModelTranslator
 
 		Function function = new Function(name, returnType);
 
-		String className = targetSpecifics.getPointerTypeName(classSymbol.getName());
-		function.addParameter(new FlatSymbol("this", className));
+		if (!method.isStatic()) {
+			String className = targetSpecifics.getPointerTypeName(classSymbol.getName());
+			function.addParameter(new FlatSymbol("this", className));
+		}
 
 		for (Symbol parameter : method.getParameters())
 			function.addParameter(translateSymbol(parameter));
 
 		AstMethodDef methodDef = new AstMethodDef(method.getDefinition());
+		ProphecyAstNode blockNode = methodDef.getBlockNode();
 
-		function.setMethodBodyBlockNode(methodDef.getBlockNode());
+		function.setMethodBodyBlockNode(blockNode);
 
 		return function;
 	}

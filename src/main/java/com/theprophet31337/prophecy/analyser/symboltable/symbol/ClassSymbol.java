@@ -197,9 +197,14 @@ public class ClassSymbol extends Symbol implements Scope, Type
 		return instanceScope.resolveMethods(name);
 	}
 
-	public List<MethodSymbol> getMethods()
+	public List<MethodSymbol> getInstanceMethods()
 	{
 		return instanceScope.getMethods();
+	}
+
+	public List<MethodSymbol> getStaticMethods()
+	{
+		return staticScope.getMethods();
 	}
 
 	public List<Symbol> getMembers()

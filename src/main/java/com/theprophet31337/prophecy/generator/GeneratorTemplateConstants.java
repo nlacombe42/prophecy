@@ -33,6 +33,7 @@ public class GeneratorTemplateConstants
 
 	public static final String CALL_TEMPLATE_NAME = "call";
 	public static final String CALL_ARGUMENT_OUTNAME = "outname";
+	public static final String CALL_ARGUMENT_RETURNVOID = "returnVoid";
 	public static final String CALL_ARGUMENT_RETURNTYPE = "returnType";
 	public static final String CALL_ARGUMENT_METHODNAME = "methodName";
 	public static final String CALL_ARGUMENT_ARGUMENTS = "arguments";

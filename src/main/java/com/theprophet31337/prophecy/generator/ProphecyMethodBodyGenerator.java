@@ -9,6 +9,7 @@ import com.theprophet31337.prophecy.ast.ProphecyAstVisitorDispatcher;
 import com.theprophet31337.prophecy.ast.nodewrapper.AstCall;
 import com.theprophet31337.prophecy.ast.nodewrapper.AstVarDecl;
 import com.theprophet31337.prophecy.generator.bean.Argument;
+import com.theprophet31337.prophecy.generator.flatmodel.Function;
 import com.theprophet31337.prophecy.reporting.ProphecyBuildListener;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
@@ -23,6 +24,7 @@ public class ProphecyMethodBodyGenerator extends ProphecyAstBaseVisitor<String>
 	private GeneratorTargetSpecifics targetSpecifics;
 	private StringBuilder output;
 	private int lastUniqueId = 0;
+	private boolean generatedReturn = false;
 
 	public ProphecyMethodBodyGenerator(STGroup templates, GeneratorTargetSpecifics targetSpecifics, ProphecyBuildListener buildListener)
 	{
@@ -58,9 +60,12 @@ public class ProphecyMethodBodyGenerator extends ProphecyAstBaseVisitor<String>
 		output.append(template.render());
 	}
 
-	public void generateBlock(ProphecyAstNode node)
+	public void generateMethodBody(Function function)
 	{
-		visitBlock(node);
+		visitBlock(function.getMethodBodyBlockNode());
+
+		if (!generatedReturn)
+			generateReturnVoid();
 	}
 
 	@Override
@@ -87,6 +92,8 @@ public class ProphecyMethodBodyGenerator extends ProphecyAstBaseVisitor<String>
 		template.add(GeneratorTemplateConstants.RETURN_ARGUMENT_TYPE, type);
 
 		output.append(template.render());
+
+		generatedReturn = true;
 
 		return null;
 	}
@@ -177,6 +184,7 @@ public class ProphecyMethodBodyGenerator extends ProphecyAstBaseVisitor<String>
 			arguments.add(argument);
 		}
 
+		template.add(GeneratorTemplateConstants.CALL_ARGUMENT_RETURNVOID, BuiltInTypeSymbol.tVoid.equals(node.getEvalType()));
 		template.add(GeneratorTemplateConstants.CALL_ARGUMENT_OUTNAME, outname);
 		template.add(GeneratorTemplateConstants.CALL_ARGUMENT_RETURNTYPE, returnType);
 		template.add(GeneratorTemplateConstants.CALL_ARGUMENT_METHODNAME, methodName);
@@ -203,5 +211,20 @@ public class ProphecyMethodBodyGenerator extends ProphecyAstBaseVisitor<String>
 		output.append(template.render());
 
 		return outname;
+	}
+
+	private void generateReturnVoid()
+	{
+		ST template = templates.getInstanceOf(GeneratorTemplateConstants.RETURN_TEMPLATE_NAME);
+
+		Type returnType = BuiltInTypeSymbol.tVoid;
+		String type = targetSpecifics.getTypeName(returnType);
+
+		template.add(GeneratorTemplateConstants.CALL_ARGUMENT_RETURNVOID, true);
+		template.add(GeneratorTemplateConstants.RETURN_ARGUMENT_TYPE, type);
+
+		output.append(template.render());
+
+		generatedReturn = true;
 	}
 }

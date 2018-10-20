@@ -12,6 +12,7 @@ targetCompatibility = 10
 dependencies {
 	compile 'org.antlr:antlr4:4.3'
 	compile 'org.antlr:stringtemplate:4.0.2'
+    compile 'org.apache.commons:commons-lang3:3.8.1'
 }
 
 repositories {
