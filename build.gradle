@@ -1,0 +1,24 @@
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+defaultTasks 'tasks'
+
+group = 'net.nlacombe'
+version = '1.0'
+
+sourceCompatibility = 10
+targetCompatibility = 10
+
+dependencies {
+	compile 'org.antlr:antlr4:4.3'
+	compile 'org.antlr:stringtemplate:4.0.2'
+}
+
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
+wrapper {
+    gradleVersion = '4.10.2'
+}

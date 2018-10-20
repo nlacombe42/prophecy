@@ -1,0 +1,48 @@
+file(model) ::= <<
+<model.customStartCode>
+
+<model.structures:structure(); separator="\n">
+
+<model.functions:function(); separator="\n\n">
+
+>>
+
+structure(structure) ::= <<
+%<structure.name> = type \<{ <structure.members:membertype(); separator=", "> }><\n>
+>>
+
+membertype(member) ::= "<member.type>"
+
+function(function) ::= <<
+define <function.returnType> @<function.name>(<function.parameters:parameter(); separator=", ">) {
+	<function.parameters:parameterInit()>
+	
+	<function.instructions>
+}
+>>
+
+parameter(parameter) ::= "<parameter.type> %_param_<parameter.name>"
+
+parameterInit(parameter) ::= <<
+%<parameter.name> = alloca <parameter.type>
+store <parameter.type> %_param_<parameter.name>, <parameter.type>* %<parameter.name><\n>
+>>
+
+call(outname, returnType, methodName, arguments) ::= <<
+%<outname> = call <returnType> @<methodName>(<arguments:argument(); separator=", ">)<\n>
+>>
+
+argument(argument) ::= "<argument.type> %<argument.valueId>"
+
+assignment(lhsType, lhsName, rhsType, rhsName, tmpname) ::= <<
+%<tmpname> = load <rhsType>* %<rhsName>
+store <rhsType> %<tmpname>, <lhsType>* %<lhsName><\n>
+>>
+
+getVarValue(outname, type, name) ::= "%<outname> = load <type>* %<name><\n>"
+
+addOp(outname, type, name1, name2) ::= "%<outname> = add <type> %<name1>, %<name2><\n>"
+
+return(name, type) ::= "ret <type> %<name><\n>"
+
+vardecl(name, type) ::= "%<name> = alloca <type><\n>"
