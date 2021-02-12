@@ -1,6 +1,7 @@
 plugins {
     id 'application'
     id 'java'
+    id 'antlr'
     id 'idea'
 }
 
@@ -8,7 +9,7 @@ group = 'net.nlacombe'
 version = '1.1'
 
 dependencies {
-    implementation 'org.antlr:antlr4:4.9.1'
+    antlr 'org.antlr:antlr4:4.9.1'
     implementation 'org.antlr:stringtemplate:4.0.2'
     implementation 'org.apache.commons:commons-lang3:3.11'
 }
@@ -16,6 +17,10 @@ dependencies {
 repositories {
     mavenCentral()
     mavenLocal()
+}
+
+generateGrammarSource {
+    arguments += ["-visitor", "-package", "net.nlacombe.prophecy.parser.antlr4"]
 }
 
 application {
