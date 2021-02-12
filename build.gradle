@@ -1,18 +1,16 @@
-apply plugin: 'java'
-apply plugin: 'eclipse'
-
-defaultTasks 'tasks'
+plugins {
+    id 'application'
+    id 'java'
+    id 'idea'
+}
 
 group = 'net.nlacombe'
-version = '1.0'
-
-sourceCompatibility = 10
-targetCompatibility = 10
+version = '1.1'
 
 dependencies {
-	compile 'org.antlr:antlr4:4.3'
-	compile 'org.antlr:stringtemplate:4.0.2'
-    compile 'org.apache.commons:commons-lang3:3.8.1'
+    implementation 'org.antlr:antlr4:4.9.1'
+    implementation 'org.antlr:stringtemplate:4.0.2'
+    implementation 'org.apache.commons:commons-lang3:3.11'
 }
 
 repositories {
@@ -20,6 +18,22 @@ repositories {
     mavenLocal()
 }
 
+application {
+    mainClass = 'com.theprophet31337.prophecy.main.ProphecyMain'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_15
+    targetCompatibility = JavaVersion.VERSION_15
+}
+
 wrapper {
-    gradleVersion = '4.10.2'
+    gradleVersion = '6.8.2'
+}
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = false
+    }
 }
