@@ -19,7 +19,7 @@ repositories {
 }
 
 application {
-    mainClass = 'com.theprophet31337.prophecy.main.ProphecyMain'
+    mainClass = 'net.nlacombe.prophecy.ProphecyMain'
 }
 
 java {
