@@ -61,11 +61,11 @@ public class SymbolDefiner extends ProphecyAstBaseListener
 
         BuiltInTypeSymbol.BUILT_IN_TYPES.forEach(globalScope::define);
 
-        var stringClass = new ClassSymbol(Constants.STRING_CLASS_NAME, globalScope, null, true);
+        var stringClass = new ClassSymbol(Constants.STRING_CLASS_NAME, globalScope, null);
         globalScope.define(stringClass);
 
         var systemClass = getSystemClass(globalScope);
-        globalScope.define(stringClass);
+        globalScope.define(systemClass);
 
         var systemObject = new VariableSymbol("system", systemClass);
         globalScope.define(systemObject);
@@ -74,8 +74,7 @@ public class SymbolDefiner extends ProphecyAstBaseListener
     }
 
     private static ClassSymbol getSystemClass(GlobalScope globalScope) {
-        var systemClass = new ClassSymbol(Constants.SYSTEM_CLASS_NAME, globalScope, null);
-        systemClass.setSystem(true);
+        var systemClass = new ClassSymbol(Constants.SYSTEM_CLASS_NAME, globalScope, null, true);
 
         var system_println = new MethodSymbol(Constants.SYSTEM_PRINTLN_METHODSIGNATURE.getName(), BuiltInTypeSymbol.tVoid, systemClass, new LocalScope(systemClass));
         system_println.setStatic(true);
