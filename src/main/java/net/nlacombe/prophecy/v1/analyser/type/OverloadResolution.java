@@ -1,10 +1,10 @@
 package net.nlacombe.prophecy.v1.analyser.type;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.MethodSignature;
-import net.nlacombe.prophecy.v1.analyser.symboltable.Type;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.BuiltInTypeSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.ClassSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.MethodSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
+import net.nlacombe.prophecy.shared.symboltable.domain.Type;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.v1.exception.ProphecyAmbiguousCallException;
 import net.nlacombe.prophecy.v1.exception.ProphecyMethodNotFoundException;
 

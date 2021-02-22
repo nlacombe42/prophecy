@@ -1,7 +1,7 @@
 package net.nlacombe.prophecy;
 
 import net.nlacombe.prophecy.v1.compiler.ProphecyCompiler;
-import net.nlacombe.prophecy.v2.parser.ProphecyV2Compiler;
+import net.nlacombe.prophecy.v2.ProphecyV2Compiler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

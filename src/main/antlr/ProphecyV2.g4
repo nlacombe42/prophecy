@@ -30,9 +30,8 @@ call: methodName=IDENTIFIER '(' arguments=exprlist? ')';
 exprlist: expression (', ' expression)*;
 
 expression
-    : left=expression operator=('*' | '/') right=expression #multiplicationExpression
-    | left=expression operator=('+' | '-') right=expression #additionExpression
-    | literal #literalExpression
+    : literal
+    | call
     ;
 
 literal
@@ -43,4 +42,4 @@ INTEGER_LITERAL: [0-9]+;
 
 IDENTIFIER: [a-zA-Z][a-zA-Z0-9_]*;
 
-NEWLINE: ('\r'? '\n' ' '*);
+NEWLINE: '\n' ' '*;

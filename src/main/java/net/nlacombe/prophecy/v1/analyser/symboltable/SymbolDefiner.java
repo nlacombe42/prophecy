@@ -1,13 +1,13 @@
 package net.nlacombe.prophecy.v1.analyser.symboltable;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.GlobalScope;
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.LocalScope;
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.Scope;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.BuiltInTypeSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.ClassSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.MethodSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.Symbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.VariableSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.Modifiers;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.LocalScope;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.Scope;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.VariableSymbol;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstBaseListener;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNodeType;
@@ -16,7 +16,6 @@ import net.nlacombe.prophecy.v1.ast.nodewrapper.AstFieldDef;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMethodDef;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstParam;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstVarDecl;
-import net.nlacombe.prophecy.v1.constants.Constants;
 import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
 import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
 
@@ -52,39 +51,11 @@ public class SymbolDefiner extends ProphecyAstBaseListener
 	@Override
 	public void enterFile(ProphecyAstNode node)
 	{
-		globalScope = getGlobalScopeWithBuiltInSymbols();
+		globalScope = BuiltInSymbolUtil.getGlobalScopeWithBuiltInSymbols();
 		currentScope = globalScope;
 	}
 
-    public static GlobalScope getGlobalScopeWithBuiltInSymbols() {
-        var globalScope = new GlobalScope();
-
-        BuiltInTypeSymbol.BUILT_IN_TYPES.forEach(globalScope::define);
-
-        var stringClass = new ClassSymbol(Constants.STRING_CLASS_NAME, globalScope, null);
-        globalScope.define(stringClass);
-
-        var systemClass = getSystemClass(globalScope);
-        globalScope.define(systemClass);
-
-        var systemObject = new VariableSymbol("system", systemClass);
-        globalScope.define(systemObject);
-
-        return globalScope;
-    }
-
-    private static ClassSymbol getSystemClass(GlobalScope globalScope) {
-        var systemClass = new ClassSymbol(Constants.SYSTEM_CLASS_NAME, globalScope, null, true);
-
-        var system_println = new MethodSymbol(Constants.SYSTEM_PRINTLN_METHODSIGNATURE.getName(), BuiltInTypeSymbol.tVoid, systemClass, new LocalScope(systemClass));
-        system_println.setStatic(true);
-        system_println.putMember(new VariableSymbol(Constants.SYSTEM_PRINTLN_PARAM_NAME, BuiltInTypeSymbol.tInt));
-        systemClass.putMember(system_println);
-
-        return systemClass;
-    }
-
-	@Override
+    @Override
 	public void enterReturn(ProphecyAstNode node)
 	{
 		node.setSymbol(currentMethod);

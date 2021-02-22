@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.v1.generator;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.GlobalScope;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatGlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.Function;
 import net.nlacombe.prophecy.v1.reporting.DefaultProphecyBuildReporter;

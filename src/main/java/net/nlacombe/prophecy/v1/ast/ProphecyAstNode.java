@@ -1,8 +1,8 @@
 package net.nlacombe.prophecy.v1.ast;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.Type;
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.Scope;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.Symbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.Type;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.Scope;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;

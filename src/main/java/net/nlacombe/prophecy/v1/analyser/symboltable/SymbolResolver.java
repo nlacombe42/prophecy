@@ -1,11 +1,14 @@
 package net.nlacombe.prophecy.v1.analyser.symboltable;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.ArraySymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.BuiltInTypeSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.ClassSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.MethodSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.Symbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.VariableSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.ArraySignature;
+import net.nlacombe.prophecy.shared.symboltable.domain.SymbolSignature;
+import net.nlacombe.prophecy.shared.symboltable.domain.Type;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ArraySymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.VariableSymbol;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstBaseListener;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNodeType;

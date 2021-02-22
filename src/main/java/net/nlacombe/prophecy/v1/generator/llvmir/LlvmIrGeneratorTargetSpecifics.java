@@ -1,10 +1,10 @@
 package net.nlacombe.prophecy.v1.generator.llvmir;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.Type;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.BuiltInTypeSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.ClassSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.MethodSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.Symbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.Type;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.v1.exception.ProphecyNotImplementedException;
 import net.nlacombe.prophecy.v1.generator.GeneratorTargetSpecifics;
 import org.apache.commons.lang3.StringUtils;

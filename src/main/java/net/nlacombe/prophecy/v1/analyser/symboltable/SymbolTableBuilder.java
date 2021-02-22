@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.v1.analyser.symboltable;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.GlobalScope;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstWalker;
 import net.nlacombe.prophecy.v1.reporting.DefaultProphecyBuildReporter;

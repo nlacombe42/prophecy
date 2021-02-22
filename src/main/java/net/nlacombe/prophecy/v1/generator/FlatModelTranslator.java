@@ -1,14 +1,14 @@
 package net.nlacombe.prophecy.v1.generator;
 
-import net.nlacombe.prophecy.v1.analyser.symboltable.scope.GlobalScope;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.BuiltInTypeSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.ClassSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.MethodSymbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.Symbol;
-import net.nlacombe.prophecy.v1.analyser.symboltable.symbol.VariableSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.shared.symboltable.domain.symbol.VariableSymbol;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMethodDef;
-import net.nlacombe.prophecy.v1.constants.Constants;
+import net.nlacombe.prophecy.shared.constants.Constants;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatGlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatSymbol;
 import net.nlacombe.prophecy.v1.generator.flatmodel.Function;
