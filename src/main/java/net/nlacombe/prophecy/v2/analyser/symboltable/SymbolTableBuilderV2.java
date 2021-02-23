@@ -25,7 +25,7 @@ public class SymbolTableBuilderV2 {
     }
 
     private MethodSymbol getSystemPrintlnMethodSymbol(GlobalScope globalScope) {
-        var system_println = new MethodSymbol(ConstantsV2.PRINTLN_SYSTEM_METHOD_SIGNATURE.getName(), BuiltInTypeSymbol.tVoid, null, new LocalScope(globalScope));
+        var system_println = new MethodSymbol(ConstantsV2.PRINTLN_INT_SYSTEM_METHOD_SIGNATURE.getName(), BuiltInTypeSymbol.tVoid, null, new LocalScope(globalScope));
         system_println.setStatic(true);
         system_println.putMember(new VariableSymbol("i", BuiltInTypeSymbol.tInt));
 

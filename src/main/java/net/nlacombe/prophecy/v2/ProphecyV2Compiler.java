@@ -3,7 +3,7 @@ package net.nlacombe.prophecy.v2;
 import net.nlacombe.prophecy.v2.analyser.symboltable.SymbolTableBuilderV2;
 import net.nlacombe.prophecy.v2.analyser.type.TypeAnalyserV2;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
-import net.nlacombe.prophecy.v2.generator.LlvmGenerator;
+import net.nlacombe.prophecy.v2.generator.llvm.LlvmGenerator;
 import net.nlacombe.prophecy.v2.parser.ProphecyV2AstBuilder;
 import net.nlacombe.prophecy.v2.reporting.Slf4jProphecyBuildListener;
 import org.slf4j.Logger;
