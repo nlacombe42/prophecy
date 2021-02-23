@@ -5,7 +5,6 @@ import net.nlacombe.prophecy.shared.symboltable.domain.SymbolSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.Type;
 import net.nlacombe.prophecy.shared.symboltable.domain.scope.Scope;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstParam;
-import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -120,11 +119,14 @@ public class MethodSymbol extends ScopedSymbol
 	{
 		List<Symbol> parameters = new ArrayList<Symbol>(orderedParameters.size());
 
-		for (Symbol symbol : orderedParameters.values())
-			parameters.add(symbol);
+        parameters.addAll(orderedParameters.values());
 
 		return parameters;
 	}
+
+	public Symbol getParameter(int index) {
+	    return getParameters().get(index);
+    }
 
 	@Override
 	public Symbol getMember(SymbolSignature signature)

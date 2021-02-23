@@ -6,7 +6,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2FileAstNode;
-import net.nlacombe.prophecy.v2.constants.ConstantsV2;
+import net.nlacombe.prophecy.v2.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.v2.util.WriterUtil;
 
 import java.io.IOException;
@@ -69,7 +69,7 @@ public class LlvmGenerator {
     }
 
     private void generate(Writer writer, MethodSymbol methodSymbol, String methodLlvmCode) {
-        var functionType = LlvmGeneratorUtil.getLlvmType(methodSymbol.getType()) + " ";
+        var functionType = LlvmGeneratorUtil.getLlvmType(methodSymbol.getType());
         var functionName = LlvmGeneratorUtil.getLlvmFunctionName(methodSymbol);
 
         var parameters = methodSymbol.getParameters().stream()
@@ -92,22 +92,26 @@ public class LlvmGenerator {
 
     private Map<MethodSignature, String> getCustomLlvmCodeByMethodSignature() {
         var customLlvmCodeByMethodSignature = new HashMap<MethodSignature, String>();
-        customLlvmCodeByMethodSignature.put(ConstantsV2.PRINTLN_INT_SYSTEM_METHOD_SIGNATURE, """
+
+        var printlnIntSystemMethodSymbol = BootstrapTypeSymbols.getInstance().getSystemPrintlnInt();
+        customLlvmCodeByMethodSignature.put(printlnIntSystemMethodSymbol.getSignature(), """
             %1 = alloca [4 x i8]
             store [4 x i8] c"%d\\0A\\00", [4 x i8]* %1
             %2 = bitcast [4 x i8]* %1 to i8*
-            call i32 (i8*, ...) @printf(i8* %2, i32 %i)
+            call i32 (i8*, ...) @printf(i8* %2, i32 %$argumentName)
             ret void
-            """);
-        customLlvmCodeByMethodSignature.put(new MethodSignature("println", List.of()), """
-            define void @println$string(i8* %s) {
-                %1 = alloca [4 x i8]
-                store [4 x i8] c"%s\\0A\\00", [4 x i8]* %1
-                %2 = bitcast [4 x i8]* %1 to i8*
-                call i32 (i8*, ...) @printf(i8* %2, i8* %s)
-                ret void
-            }
-            """);
+            """
+            .replace("$argumentName", printlnIntSystemMethodSymbol.getParameter(0).getName()));
+
+        var printlnStringSystemMethodSignature = BootstrapTypeSymbols.getInstance().getSystemPrintlnString();
+        customLlvmCodeByMethodSignature.put(printlnStringSystemMethodSignature.getSignature(), """
+            %1 = alloca [4 x i8]
+            store [4 x i8] c"%s\\0A\\00", [4 x i8]* %1
+            %2 = bitcast [4 x i8]* %1 to i8*
+            call i32 (i8*, ...) @printf(i8* %2, i8* %$argumentName)
+            ret void
+            """
+            .replace("$argumentName", printlnStringSystemMethodSignature.getParameter(0).getName()));
 
         return customLlvmCodeByMethodSignature;
     }

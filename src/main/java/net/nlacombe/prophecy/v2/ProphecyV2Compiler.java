@@ -2,7 +2,6 @@ package net.nlacombe.prophecy.v2;
 
 import net.nlacombe.prophecy.v2.analyser.symboltable.SymbolTableBuilderV2;
 import net.nlacombe.prophecy.v2.analyser.type.TypeAnalyserV2;
-import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.v2.generator.llvm.LlvmGenerator;
 import net.nlacombe.prophecy.v2.parser.ProphecyV2AstBuilder;
 import net.nlacombe.prophecy.v2.reporting.Slf4jProphecyBuildListener;
@@ -42,8 +41,6 @@ public class ProphecyV2Compiler {
             new TypeAnalyserV2().evaluateTypesAndResolveCalls(astRoot, buildListener);
 
             new LlvmGenerator().generate(outputStreamWriter, globalScope);
-        } catch (ProphecyCompilerException exception) {
-            logger.error(exception.getMessage());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

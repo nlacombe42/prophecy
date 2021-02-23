@@ -4,6 +4,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.Type;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
+import net.nlacombe.prophecy.v2.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
 import org.apache.commons.collections4.ListUtils;
 
@@ -18,6 +19,8 @@ public class LlvmGeneratorUtil {
             return "void";
         if (BuiltInTypeSymbol.tInt.equals(type))
             return "i32";
+        if (BootstrapTypeSymbols.getInstance().getStringClass().equals(type))
+            return "i8*";
         else
             throw new ProphecyCompilerException("Unimplemented llvm type for prophecy type: " + type);
     }
@@ -43,7 +46,7 @@ public class LlvmGeneratorUtil {
 
     private static List<String> getNameParts(MethodSignature signature) {
         var parameterNameParts = signature.getParameterTypes().stream()
-            .map(LlvmGeneratorUtil::getLlvmType)
+            .map(Type::getName)
             .collect(Collectors.toList());
 
         return ListUtils.union(List.of(signature.getName()), parameterNameParts);
