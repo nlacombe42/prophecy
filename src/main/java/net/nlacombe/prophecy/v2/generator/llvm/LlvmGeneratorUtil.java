@@ -29,6 +29,27 @@ public class LlvmGeneratorUtil {
         return "@" + getLlvmNameFromNameParts(getFunctionNameParts(methodSymbol));
     }
 
+    public static String toLlvmStringLiteral(String stringValue) {
+        return stringValue.chars()
+            .mapToObj(codepoint -> {
+                if (isPrintableAscii(codepoint) && !(codepoint == '\\' || codepoint == '"'))
+                    return "" + (char) codepoint;
+                else {
+                    var javaHexString = Integer.toHexString(codepoint);
+
+                    if (javaHexString.length() < 2)
+                        javaHexString = "0" + javaHexString;
+
+                    return "\\" + javaHexString;
+                }
+            })
+            .collect(Collectors.joining());
+    }
+
+    private static boolean isPrintableAscii(int codepoint) {
+        return codepoint >= 32 && codepoint <= 127;
+    }
+
     private static String getLlvmNameFromNameParts(List<String> nameParts) {
         return String.join(getLlvmNamePartSeparator(), nameParts);
     }

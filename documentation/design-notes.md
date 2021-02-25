@@ -12,3 +12,5 @@
       - but then how to distinguish variable declarations?  
         you could not write `String a;` because `String` would be understood as a keyword
         - maybe all keywords can start with lowercase and all types with uppercase
+      - to distinguish with assignment, assignment stats with (`ID` ` ` `=`)
+        and keywords would be (`ID` ` ` somethingElseThan=)  

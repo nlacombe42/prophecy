@@ -36,9 +36,11 @@ expression
 
 literal
     : INTEGER_LITERAL #integerLiteral
+    | STRING_LITERAL #stringLiteral
     ;
 
 INTEGER_LITERAL: [0-9]+;
+STRING_LITERAL: '"' ( '\\"' | . )*? '"';
 
 IDENTIFIER: [a-zA-Z][a-zA-Z0-9_]*;
 

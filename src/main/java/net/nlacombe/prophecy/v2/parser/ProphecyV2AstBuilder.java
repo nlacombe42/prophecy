@@ -6,7 +6,6 @@ import net.nlacombe.prophecy.shared.parser.ProphecyBuildListenerConsoleErrorList
 import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2FileAstNode;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
-import net.nlacombe.prophecy.v2.reporting.Slf4jProphecyBuildListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -35,7 +34,7 @@ public class ProphecyV2AstBuilder {
     }
 
     private ProphecyV2FileAstNode visit(ProphecyV2Parser.FileContext fileContext) {
-        return (ProphecyV2FileAstNode) fileContext.accept(new ProphecyV2AstBuilderParseTreeVisitor()).get(0);
+        return (ProphecyV2FileAstNode) fileContext.accept(new ProphecyV2AstBuilderParseTreeVisitor(listener)).get(0);
     }
 
     private ProphecyV2Parser getParser(InputStream input, ProphecyBuildListener listener) {

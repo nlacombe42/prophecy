@@ -2,11 +2,14 @@ package net.nlacombe.prophecy.v2.parser;
 
 import net.nlacombe.prophecy.parser.antlr4.ProphecyV2BaseVisitor;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyV2Parser;
+import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
+import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2CallAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2ExpressionAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2FileAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2IntegerLiteralAstNode;
+import net.nlacombe.prophecy.v2.ast.node.ProphecyV2StringLiteralAstNode;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.v2.reporting.SourceCodeLocation;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -16,6 +19,12 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<List<ProphecyV2AstNode>> {
+
+    private final ProphecyBuildListener buildListener;
+
+    public ProphecyV2AstBuilderParseTreeVisitor(ProphecyBuildListener buildListener) {
+        this.buildListener = buildListener;
+    }
 
     @Override
     public List<ProphecyV2AstNode> visitFile(ProphecyV2Parser.FileContext fileContext) {
@@ -41,7 +50,26 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
     public List<ProphecyV2AstNode> visitIntegerLiteral(ProphecyV2Parser.IntegerLiteralContext integerLiteralContext) {
         var sourceCodeLocation = getSourceCodeLocation(integerLiteralContext);
 
-        return List.of(new ProphecyV2IntegerLiteralAstNode(sourceCodeLocation, integerLiteralContext.getText()));
+        return List.of(new ProphecyV2IntegerLiteralAstNode(sourceCodeLocation, Integer.parseInt(integerLiteralContext.getText())));
+    }
+
+    @Override
+    public List<ProphecyV2AstNode> visitStringLiteral(ProphecyV2Parser.StringLiteralContext stringLiteralContext) {
+        var sourceCodeLocation = getSourceCodeLocation(stringLiteralContext);
+        var stringSourceText = stringLiteralContext.getText().substring(1, stringLiteralContext.getText().length() - 1);
+
+        if (stringSourceText.contains("${"))
+            buildListener.buildMessage(BuildMessageLevel.ERROR, sourceCodeLocation.getLine(), sourceCodeLocation.getColumn(),
+                "string interpolation not supported yet");
+
+        try {
+            StringLiteralUtil.getStringValue(stringSourceText);
+        } catch (IllegalArgumentException e) {
+            buildListener.buildMessage(BuildMessageLevel.ERROR, sourceCodeLocation.getLine(), sourceCodeLocation.getColumn(),
+                e.getMessage());
+        }
+
+        return List.of(new ProphecyV2StringLiteralAstNode(sourceCodeLocation, stringSourceText));
     }
 
     @Override

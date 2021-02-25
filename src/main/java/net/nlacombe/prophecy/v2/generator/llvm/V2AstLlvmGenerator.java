@@ -6,6 +6,7 @@ import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2CallAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2ExpressionAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2IntegerLiteralAstNode;
+import net.nlacombe.prophecy.v2.ast.node.ProphecyV2StringLiteralAstNode;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ public class V2AstLlvmGenerator {
         var generatorsByAstNodeType = new HashMap<Class<? extends ProphecyV2AstNode>, Function<ProphecyV2ExpressionAstNode, LlvmSymbol>>();
         generatorsByAstNodeType.put(ProphecyV2CallAstNode.class, node -> V2AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyV2CallAstNode)node));
         generatorsByAstNodeType.put(ProphecyV2IntegerLiteralAstNode.class, node -> V2AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyV2IntegerLiteralAstNode)node));
+        generatorsByAstNodeType.put(ProphecyV2StringLiteralAstNode.class, node -> V2AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyV2StringLiteralAstNode)node));
 
         var generator = generatorsByAstNodeType.get(astNodeClass);
 
@@ -53,12 +55,38 @@ public class V2AstLlvmGenerator {
         try {
             var llvmType = LlvmGeneratorUtil.getLlvmType(astNode.getEvaluatedType());
             var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-            var intLitValue = Integer.parseInt(astNode.getLiteralValue());
+            var intLitValue = astNode.getLiteralValue();
 
             var llvmCode = "$returnValueName = add $llvmType 0, $intLitValue ; int lit ast node\n"
                 .replace("$returnValueName", returnValueName)
                 .replace("$llvmType", llvmType)
                 .replace("$intLitValue", "" + intLitValue);
+
+            writer.write(llvmCode);
+
+            return new LlvmSymbol(llvmType, returnValueName);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyV2StringLiteralAstNode astNode) {
+        try {
+            var llvmType = LlvmGeneratorUtil.getLlvmType(astNode.getEvaluatedType());
+            var allocTempName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            var llvmStringLiteral = LlvmGeneratorUtil.toLlvmStringLiteral(astNode.getStringValue());
+            var stringLength = astNode.getStringValue().length() + 1;
+
+            var llvmCode = """
+                $allocTempName = alloca [$stringLength x i8] ; string lit ast start
+                store [$stringLength x i8] c"$llvmStringLiteral\\00", [$stringLength x i8]* $allocTempName
+                $returnValueName = bitcast [$stringLength x i8]* $allocTempName to i8* ; string lit ast end
+                """
+                .replace("$allocTempName", allocTempName)
+                .replace("$returnValueName", returnValueName)
+                .replace("$stringLength", "" + stringLength)
+                .replace("$llvmStringLiteral", llvmStringLiteral);
 
             writer.write(llvmCode);
 

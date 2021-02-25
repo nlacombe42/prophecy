@@ -1,6 +1,5 @@
 package net.nlacombe.prophecy.v2.ast.node;
 
-import net.nlacombe.prophecy.shared.symboltable.domain.Type;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.v2.reporting.SourceCodeLocation;
 
@@ -8,20 +7,15 @@ import java.util.List;
 
 public class ProphecyV2IntegerLiteralAstNode extends AbstractProphecyV2ExpressionAstNode {
 
-    private final String literalValue;
+    private final int literalValue;
 
-    public ProphecyV2IntegerLiteralAstNode(SourceCodeLocation definitionSourceCodeLocation, String literalValue) {
+    public ProphecyV2IntegerLiteralAstNode(SourceCodeLocation definitionSourceCodeLocation, int literalValue) {
         super(definitionSourceCodeLocation, BuiltInTypeSymbol.tInt);
 
         this.literalValue = literalValue;
     }
 
-    @Override
-    public Type getEvaluatedType() {
-        return BuiltInTypeSymbol.tInt;
-    }
-
-    public String getLiteralValue() {
+    public int getLiteralValue() {
         return literalValue;
     }
 
