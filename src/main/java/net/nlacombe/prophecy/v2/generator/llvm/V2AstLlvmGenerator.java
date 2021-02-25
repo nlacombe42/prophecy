@@ -1,12 +1,12 @@
 package net.nlacombe.prophecy.v2.generator.llvm;
 
-import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2CallAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2ExpressionAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2IntegerLiteralAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2StringLiteralAstNode;
+import net.nlacombe.prophecy.v2.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
 
 import java.io.IOException;
@@ -118,7 +118,7 @@ public class V2AstLlvmGenerator {
 
             LlvmSymbol returnLlvmSymbol = null;
 
-            if (!BuiltInTypeSymbol.tVoid.equals(methodSymbol.getType())) {
+            if (!BootstrapTypeSymbols.getInstance().getVoidClass().equals(methodSymbol.getType())) {
                 var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
 
                 llvmCode = returnValueName + " = " + llvmCode;

@@ -2,7 +2,6 @@ package net.nlacombe.prophecy.v2.generator.llvm;
 
 import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.Type;
-import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.v2.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
@@ -15,9 +14,9 @@ import java.util.stream.Collectors;
 public class LlvmGeneratorUtil {
 
     public static String getLlvmType(Type type) {
-        if (BuiltInTypeSymbol.tVoid.equals(type))
+        if (BootstrapTypeSymbols.getInstance().getVoidClass().equals(type))
             return "void";
-        if (BuiltInTypeSymbol.tInt.equals(type))
+        if (BootstrapTypeSymbols.getInstance().getIntegerClass().equals(type))
             return "i32";
         if (BootstrapTypeSymbols.getInstance().getStringClass().equals(type))
             return "i8*";

@@ -2,7 +2,6 @@ package net.nlacombe.prophecy.v2.generator.llvm;
 
 import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
-import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2FileAstNode;
@@ -55,7 +54,7 @@ public class LlvmGenerator {
                         stringWriter.write("; end of statement\n\n");
                     });
 
-                    if (BuiltInTypeSymbol.tVoid.equals(methodSymbol.getType()))
+                    if (BootstrapTypeSymbols.getInstance().getVoidClass().equals(methodSymbol.getType()))
                         stringWriter.write("ret void\n");
 
                     methodLlvmCode = stringWriter.toString();

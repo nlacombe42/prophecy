@@ -1,7 +1,6 @@
 package net.nlacombe.prophecy.v2.builtintypes;
 
 import net.nlacombe.prophecy.shared.symboltable.domain.scope.LocalScope;
-import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
@@ -13,16 +12,20 @@ public class BootstrapTypeSymbols {
 
     private static BootstrapTypeSymbols instance;
 
+    private final ClassSymbol voidClass;
     private final ClassSymbol objectClass;
     private final ClassSymbol stringClass;
+    private final ClassSymbol integerClass;
     private final MethodSymbol systemPrintlnInt;
     private final MethodSymbol systemPrintlnString;
 
     private BootstrapTypeSymbols() {
+        voidClass = new ClassSymbol("Void", null, null);
         objectClass = new ClassSymbol("Object", null, null);
+        integerClass = new ClassSymbol("Integer", null, objectClass);
         stringClass = new ClassSymbol("String", null, objectClass);
-        systemPrintlnInt = getSystemPrintlnIntMethodSymbol();
-        systemPrintlnString = getSystemPrintlnStringMethodSymbol(stringClass);
+        systemPrintlnInt = getSystemPrintlnIntMethodSymbol(voidClass, integerClass);
+        systemPrintlnString = getSystemPrintlnStringMethodSymbol(voidClass, stringClass);
     }
 
     public static BootstrapTypeSymbols getInstance() {
@@ -33,27 +36,35 @@ public class BootstrapTypeSymbols {
     }
 
     public List<Symbol> getAll() {
-        return List.of(objectClass, stringClass, systemPrintlnInt, systemPrintlnString);
+        return List.of(voidClass, objectClass, integerClass, stringClass, systemPrintlnInt, systemPrintlnString);
     }
 
-    private MethodSymbol getSystemPrintlnIntMethodSymbol() {
-        var methodSymbol = new MethodSymbol("println", BuiltInTypeSymbol.tVoid, null, new LocalScope(null));
+    private MethodSymbol getSystemPrintlnIntMethodSymbol(ClassSymbol voidClass, ClassSymbol integerClass) {
+        var methodSymbol = new MethodSymbol("println", voidClass, null, new LocalScope(null));
         methodSymbol.setStatic(true);
-        methodSymbol.putMember(new VariableSymbol("i", BuiltInTypeSymbol.tInt));
+        methodSymbol.putMember(new VariableSymbol("i", integerClass));
 
         return methodSymbol;
     }
 
-    private MethodSymbol getSystemPrintlnStringMethodSymbol(ClassSymbol stringClass) {
-        var methodSymbol = new MethodSymbol("println", BuiltInTypeSymbol.tVoid, null, new LocalScope(null));
+    private MethodSymbol getSystemPrintlnStringMethodSymbol(ClassSymbol voidClass, ClassSymbol stringClass) {
+        var methodSymbol = new MethodSymbol("println", voidClass, null, new LocalScope(null));
         methodSymbol.setStatic(true);
         methodSymbol.putMember(new VariableSymbol("s", stringClass));
 
         return methodSymbol;
     }
 
+    public ClassSymbol getVoidClass() {
+        return voidClass;
+    }
+
     public ClassSymbol getObjectClass() {
         return objectClass;
+    }
+
+    public ClassSymbol getIntegerClass() {
+        return integerClass;
     }
 
     public ClassSymbol getStringClass() {
