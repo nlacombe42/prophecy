@@ -23,4 +23,9 @@ public class ProphecyV2IntegerLiteralAstNode extends AbstractProphecyV2Expressio
     public List<ProphecyV2AstNode> getChildren() {
         return List.of();
     }
+
+    @Override
+    public String toString() {
+        return "" + literalValue;
+    }
 }

@@ -4,6 +4,8 @@ import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.v2.reporting.SourceCodeLocation;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 public class ProphecyV2FileAstNode extends AbstractProphecyV2AstNode {
 
@@ -32,5 +34,12 @@ public class ProphecyV2FileAstNode extends AbstractProphecyV2AstNode {
     @Override
     public List<ProphecyV2AstNode> getChildren() {
         return statements;
+    }
+
+    @Override
+    public String toString() {
+        return statements.stream()
+            .map(Objects::toString)
+            .collect(Collectors.joining("\n"));
     }
 }

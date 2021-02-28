@@ -5,6 +5,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.v2.reporting.SourceCodeLocation;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class ProphecyV2CallAstNode extends AbstractProphecyV2ExpressionAstNode {
@@ -43,5 +44,16 @@ public class ProphecyV2CallAstNode extends AbstractProphecyV2ExpressionAstNode {
 
     public void setEvaluatedType(Type evaluatedType) {
         this.evaluatedType = evaluatedType;
+    }
+
+    @Override
+    public String toString() {
+        var arguments = getArguments().stream()
+            .map(Objects::toString)
+            .collect(Collectors.joining(", "));
+
+        return "$methodName($arguments)"
+            .replace("$methodName", methodName)
+            .replace("$arguments", arguments);
     }
 }
