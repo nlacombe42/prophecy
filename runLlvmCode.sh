@@ -1,3 +1,5 @@
 #!/bin/bash
 
-llvm-as -f output.ll && lli output.bc
+lli output.ll
+
+# llvm-as -f output.ll && lli output.bc
