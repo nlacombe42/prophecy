@@ -4,7 +4,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstWalker;
 import net.nlacombe.prophecy.v1.reporting.DefaultProphecyBuildReporter;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 
 public class SymbolTableBuilder
 {

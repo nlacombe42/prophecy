@@ -3,7 +3,7 @@ package net.nlacombe.prophecy.v1.generator;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
-import net.nlacombe.prophecy.shared.constants.Constants;
+import net.nlacombe.prophecy.v1.constants.Constants;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatGlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatSymbol;
 import net.nlacombe.prophecy.v1.generator.flatmodel.Function;

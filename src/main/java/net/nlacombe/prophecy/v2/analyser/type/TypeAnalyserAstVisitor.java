@@ -1,20 +1,19 @@
 package net.nlacombe.prophecy.v2.analyser.type;
 
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
 import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.Type;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.v2.ast.ProphecyV2AstVisitor;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2CallAstNode;
+import net.nlacombe.prophecy.v2.reporting.BuildMessageService;
 
 public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
 
-    private final ProphecyBuildListener buildListener;
+    private final BuildMessageService buildMessageService;
 
-    public TypeAnalyserAstVisitor(ProphecyBuildListener buildListener) {
-        this.buildListener = buildListener;
+    public TypeAnalyserAstVisitor(BuildMessageService buildMessageService) {
+        this.buildMessageService = buildMessageService;
     }
 
     @Override
@@ -29,8 +28,7 @@ public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
         if (methodCalled == null) {
             var sourceCodeLocation = node.getDefinitionSourceCodeLocation();
 
-            buildListener.buildMessage(BuildMessageLevel.ERROR, sourceCodeLocation.getLine(), sourceCodeLocation.getColumn(),
-                "No method with signature found: " + methodSignature);
+            buildMessageService.error(sourceCodeLocation, "No method with signature found: " + methodSignature);
 
             return null;
         }

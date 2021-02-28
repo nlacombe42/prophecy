@@ -2,8 +2,6 @@ package net.nlacombe.prophecy.v2.parser;
 
 import net.nlacombe.prophecy.parser.antlr4.ProphecyV2BaseVisitor;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyV2Parser;
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2CallAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2ExpressionAstNode;
@@ -11,24 +9,28 @@ import net.nlacombe.prophecy.v2.ast.node.ProphecyV2FileAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2IntegerLiteralAstNode;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2StringLiteralAstNode;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
+import net.nlacombe.prophecy.v2.reporting.BuildMessageService;
 import net.nlacombe.prophecy.v2.reporting.SourceCodeLocation;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.collections4.ListUtils;
 
+import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<List<ProphecyV2AstNode>> {
 
-    private final ProphecyBuildListener buildListener;
+    private final Path filePath;
+    private final BuildMessageService buildMessageService;
 
-    public ProphecyV2AstBuilderParseTreeVisitor(ProphecyBuildListener buildListener) {
-        this.buildListener = buildListener;
+    public ProphecyV2AstBuilderParseTreeVisitor(Path filePath, BuildMessageService buildMessageService) {
+        this.filePath = filePath;
+        this.buildMessageService = buildMessageService;
     }
 
     @Override
     public List<ProphecyV2AstNode> visitFile(ProphecyV2Parser.FileContext fileContext) {
-        return List.of(new ProphecyV2FileAstNode(visitChildren(fileContext)));
+        return List.of(new ProphecyV2FileAstNode(getSourceCodeLocation(fileContext), visitChildren(fileContext)));
     }
 
     @Override
@@ -40,7 +42,7 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
         validateArgumentsAreExpressions(sourceCodeLocation, argumentNodes);
 
         var expressionArgumentNodes = argumentNodes.stream()
-            .map(node -> (ProphecyV2ExpressionAstNode)node)
+            .map(node -> (ProphecyV2ExpressionAstNode) node)
             .collect(Collectors.toList());
 
         return List.of(new ProphecyV2CallAstNode(sourceCodeLocation, callContext.methodName.getText(), expressionArgumentNodes));
@@ -59,14 +61,12 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
         var stringSourceText = stringLiteralContext.getText().substring(1, stringLiteralContext.getText().length() - 1);
 
         if (stringSourceText.contains("${"))
-            buildListener.buildMessage(BuildMessageLevel.ERROR, sourceCodeLocation.getLine(), sourceCodeLocation.getColumn(),
-                "string interpolation not supported yet");
+            buildMessageService.error(sourceCodeLocation, "string interpolation not supported yet");
 
         try {
             StringLiteralUtil.getStringValue(stringSourceText);
         } catch (IllegalArgumentException e) {
-            buildListener.buildMessage(BuildMessageLevel.ERROR, sourceCodeLocation.getLine(), sourceCodeLocation.getColumn(),
-                e.getMessage());
+            buildMessageService.error(sourceCodeLocation, e.getMessage());
         }
 
         return List.of(new ProphecyV2StringLiteralAstNode(sourceCodeLocation, stringSourceText));
@@ -93,7 +93,10 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
 
     private SourceCodeLocation getSourceCodeLocation(ParserRuleContext parserRuleContext) {
         var start = parserRuleContext.start;
+        var end = parserRuleContext.stop;
 
-        return new SourceCodeLocation(null, start.getLine(), start.getCharPositionInLine());
+        return SourceCodeLocation.fromRange(filePath,
+            start.getLine(), start.getCharPositionInLine() + 1,
+            end.getLine(), end.getCharPositionInLine() + 1);
     }
 }

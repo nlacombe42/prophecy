@@ -1,4 +1,4 @@
-package net.nlacombe.prophecy.shared.reporting;
+package net.nlacombe.prophecy.v1.reporting;
 
 public enum BuildMessageLevel {
 

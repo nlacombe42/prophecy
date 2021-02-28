@@ -13,8 +13,8 @@ public class ProphecyV2FileAstNode extends AbstractProphecyV2AstNode {
 
     private GlobalScope globalScope;
 
-    public ProphecyV2FileAstNode(List<ProphecyV2AstNode> statements) {
-        super(new SourceCodeLocation(null, null, null));
+    public ProphecyV2FileAstNode(SourceCodeLocation sourceCodeLocation, List<ProphecyV2AstNode> statements) {
+        super(sourceCodeLocation);
 
         this.statements = statements;
     }

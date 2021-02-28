@@ -8,7 +8,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.VariableSymbol;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMethodDef;
-import net.nlacombe.prophecy.shared.constants.Constants;
+import net.nlacombe.prophecy.v1.constants.Constants;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatGlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatSymbol;
 import net.nlacombe.prophecy.v1.generator.flatmodel.Function;
@@ -129,7 +129,7 @@ public class FlatModelTranslator
 	 */
 	private List<FlatSymbol> directMemberToStructure(ClassSymbol classSymbol)
 	{
-		List<FlatSymbol> members = new LinkedList<FlatSymbol>();
+		List<FlatSymbol> members = new LinkedList<>();
 		VariableSymbol variable;
 		String name;
 		String type;

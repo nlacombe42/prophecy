@@ -16,8 +16,8 @@ import net.nlacombe.prophecy.v1.ast.nodewrapper.AstFieldDef;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMethodDef;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstParam;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstVarDecl;
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.BuildMessageLevel;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 
 public class SymbolDefiner extends ProphecyAstBaseListener
 {

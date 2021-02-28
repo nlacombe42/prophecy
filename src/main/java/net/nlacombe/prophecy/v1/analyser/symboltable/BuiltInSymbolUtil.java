@@ -6,7 +6,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.VariableSymbol;
-import net.nlacombe.prophecy.shared.constants.Constants;
+import net.nlacombe.prophecy.v1.constants.Constants;
 
 public class BuiltInSymbolUtil {
 

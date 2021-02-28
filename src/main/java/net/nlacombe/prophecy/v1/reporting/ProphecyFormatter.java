@@ -1,7 +1,5 @@
 package net.nlacombe.prophecy.v1.reporting;
 
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-
 public class ProphecyFormatter
 {
 	public static String formatBuildMessage(BuildMessageLevel level, String message)

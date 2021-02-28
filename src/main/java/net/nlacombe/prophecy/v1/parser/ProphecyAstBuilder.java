@@ -1,11 +1,10 @@
 package net.nlacombe.prophecy.v1.parser;
 
-import net.nlacombe.prophecy.shared.parser.ProphecyBuildListenerConsoleErrorListener;
 import net.nlacombe.prophecy.v1.ast.ProphecyAstNode;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyLexer;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyParser;
 import net.nlacombe.prophecy.v1.reporting.DefaultProphecyBuildReporter;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;

@@ -10,7 +10,7 @@ import net.nlacombe.prophecy.v1.ast.nodewrapper.AstCall;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstVarDecl;
 import net.nlacombe.prophecy.v1.generator.bean.Argument;
 import net.nlacombe.prophecy.v1.generator.flatmodel.Function;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 
@@ -173,7 +173,7 @@ public class ProphecyMethodBodyGenerator extends ProphecyAstBaseVisitor<String>
 		String methodName = targetSpecifics.getMethodName((MethodSymbol) node.getSymbol());
 		String outname = targetSpecifics.getIdentifierName(getNewUniqueIdentifierName());
 
-		List<Argument> arguments = new LinkedList<Argument>();
+		List<Argument> arguments = new LinkedList<>();
 		Argument argument;
 
 		for (ProphecyAstNode child : call.getArgumentsNode().getChildrenAsArray()) {

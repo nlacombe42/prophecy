@@ -1,15 +1,18 @@
 package net.nlacombe.prophecy;
 
 import net.nlacombe.prophecy.v1.compiler.ProphecyCompiler;
-import net.nlacombe.prophecy.v2.ProphecyV2Compiler;
+import net.nlacombe.prophecy.v2.compiler.ProphecyV2Compiler;
+import net.nlacombe.prophecy.v2.exception.ProphecyCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Path;
 
 public class ProphecyMain {
+
     private static final Logger logger = LoggerFactory.getLogger(ProphecyMain.class);
 
     public static void main(String[] args) {
@@ -17,14 +20,19 @@ public class ProphecyMain {
     }
 
     private static void executeProphecyV2Compiler() {
+        var inputFilePath = Path.of("inputv2.txt");
+
         try (
-            var fileInputStream = new FileInputStream("inputv2.txt");
-            var fileOutputStream = new FileOutputStream("output.ll");
+            var fileInputStream = new FileInputStream(inputFilePath.toFile());
+            var fileOutputStream = new FileOutputStream("output.ll")
         ) {
-            var compiler = new ProphecyV2Compiler(fileInputStream, fileOutputStream);
+            var compiler = new ProphecyV2Compiler(fileInputStream, inputFilePath, fileOutputStream);
             compiler.compile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (ProphecyCompilationErrorsException exception) {
+            logger.error(exception.getMessage());
+            System.exit(-1);
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
         }
     }
 

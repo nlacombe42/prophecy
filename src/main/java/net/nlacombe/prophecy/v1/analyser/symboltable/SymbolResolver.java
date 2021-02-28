@@ -20,8 +20,8 @@ import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMember;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMethodDef;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstParam;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstVarDecl;
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.BuildMessageLevel;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 
 public class SymbolResolver extends ProphecyAstBaseListener
 {
@@ -198,10 +198,11 @@ public class SymbolResolver extends ProphecyAstBaseListener
 		SymbolSignature signature = new SymbolSignature(typeNode.getText());
 		Symbol symbol = typeNode.getScope().resolve(signature);
 
-		if (symbol == null || !(symbol instanceof Type)) {
+		if (!(symbol instanceof Type)) {
 			buildListener.buildMessage(BuildMessageLevel.ERROR,
 					node.getLineNumber(), node.getColumn(),
 					"unknown type \"" + node.getText() + "\"");
+			return;
 		}
 
 		typeNode.setEvalType((Type) symbol);

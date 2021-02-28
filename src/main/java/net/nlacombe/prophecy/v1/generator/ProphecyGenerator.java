@@ -4,7 +4,7 @@ import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.FlatGlobalScope;
 import net.nlacombe.prophecy.v1.generator.flatmodel.Function;
 import net.nlacombe.prophecy.v1.reporting.DefaultProphecyBuildReporter;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 import org.stringtemplate.v4.ST;
 import org.stringtemplate.v4.STGroup;
 import org.stringtemplate.v4.STGroupFile;

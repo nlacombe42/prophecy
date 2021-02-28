@@ -1,4 +1,4 @@
-package net.nlacombe.prophecy.shared.constants;
+package net.nlacombe.prophecy.v1.constants;
 
 import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.symbol.BuiltInTypeSymbol;

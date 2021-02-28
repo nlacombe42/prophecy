@@ -1,7 +1,7 @@
-package net.nlacombe.prophecy.shared.parser;
+package net.nlacombe.prophecy.v1.parser;
 
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.BuildMessageLevel;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 import org.antlr.v4.runtime.ConsoleErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;

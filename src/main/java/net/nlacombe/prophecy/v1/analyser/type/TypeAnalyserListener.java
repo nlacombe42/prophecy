@@ -15,11 +15,11 @@ import net.nlacombe.prophecy.v1.ast.ProphecyAstUtil;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstCall;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstCast;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstMember;
-import net.nlacombe.prophecy.shared.constants.Constants;
+import net.nlacombe.prophecy.v1.constants.Constants;
 import net.nlacombe.prophecy.v1.exception.ProphecyAmbiguousCallException;
 import net.nlacombe.prophecy.v1.exception.ProphecyMethodNotFoundException;
-import net.nlacombe.prophecy.shared.reporting.BuildMessageLevel;
-import net.nlacombe.prophecy.shared.reporting.ProphecyBuildListener;
+import net.nlacombe.prophecy.v1.reporting.BuildMessageLevel;
+import net.nlacombe.prophecy.v1.reporting.ProphecyBuildListener;
 
 /**
  * Calculate promotion, calculate eval type and perform static type checking.
@@ -413,7 +413,7 @@ public class TypeAnalyserListener extends ProphecyAstBaseListener
 
 		exprNode.setPromoteToType(TypeCalculations.promoteToType(exprType, BuiltInTypeSymbol.tInt));
 
-		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isIntegerType((BuiltInTypeSymbol) exprType)) {
+		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isIntegerType(exprType)) {
 			invalidOperandType(exprNode.getLineNumber(), exprNode.getColumn(), exprType, "arr");
 		}
 
@@ -545,7 +545,7 @@ public class TypeAnalyserListener extends ProphecyAstBaseListener
 
 		Type exprType = exprNode.getEvalType();
 
-		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isIntegerType((BuiltInTypeSymbol) exprType)) {
+		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isIntegerType(exprType)) {
 			invalidOperandType(exprNode.getLineNumber(), exprNode.getColumn(), exprType, "~");
 		}
 
@@ -573,7 +573,7 @@ public class TypeAnalyserListener extends ProphecyAstBaseListener
 
 		Type exprType = exprNode.getEvalType();
 
-		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isNumeric((BuiltInTypeSymbol) exprType)) {
+		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isNumeric(exprType)) {
 			invalidOperandType(exprNode.getLineNumber(), exprNode.getColumn(), exprType, "-");
 		}
 
@@ -587,7 +587,7 @@ public class TypeAnalyserListener extends ProphecyAstBaseListener
 
 		Type exprType = exprNode.getEvalType();
 
-		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isNumeric((BuiltInTypeSymbol) exprType)) {
+		if (!(exprType instanceof BuiltInTypeSymbol) || BuiltInTypeSymbol.isNumeric(exprType)) {
 			invalidOperandType(exprNode.getLineNumber(), exprNode.getColumn(), exprType, "+");
 		}
 

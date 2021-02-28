@@ -5,30 +5,43 @@ import java.nio.file.Path;
 public class SourceCodeLocation {
 
     private final Path filePath;
-    private final Integer line;
-    private final Integer column;
+    private final int startLine;
+    private final int startColumn;
+    private final int endLine;
+    private final int endColumn;
 
-    public SourceCodeLocation(Path filePath, Integer line, Integer column) {
+    public SourceCodeLocation(Path filePath, int startLine, int startColumn, int endLine, int endColumn) {
         this.filePath = filePath;
-        this.line = line;
-        this.column = column;
+        this.startLine = startLine;
+        this.startColumn = startColumn;
+        this.endLine = endLine;
+        this.endColumn = endColumn;
+    }
+
+    public static SourceCodeLocation fromPosition(Path filePath, int line, int column) {
+        return new SourceCodeLocation(filePath, line, column, line, column);
+    }
+
+    public static SourceCodeLocation fromRange(Path filePath, int startLine, int startColumn, int endLine, int endColumn) {
+        return new SourceCodeLocation(filePath, startLine, startColumn, endLine, endColumn);
     }
 
     @Override
     public String toString() {
-        if (filePath == null && line == null && column == null)
-            return  "{ no location specified }";
-
         var text = "{ ";
 
         if (filePath != null)
             text += "file: " + filePath;
 
-        if (line != null)
-            text += ", line: " + line;
-
-        if (column != null)
-            text += ", column: " + column;
+        if (startLine == endLine && startColumn == endColumn) {
+            text += ", line: " + startLine;
+            text += ", column: " + startColumn;
+        } else {
+            text += ", start line: " + startLine;
+            text += ", start column: " + startColumn;
+            text += ", end line: " + endLine;
+            text += ", end column: " + endColumn;
+        }
 
         text += " }";
 
@@ -39,11 +52,19 @@ public class SourceCodeLocation {
         return filePath;
     }
 
-    public Integer getLine() {
-        return line;
+    public int getStartLine() {
+        return startLine;
     }
 
-    public Integer getColumn() {
-        return column;
+    public int getStartColumn() {
+        return startColumn;
+    }
+
+    public int getEndLine() {
+        return endLine;
+    }
+
+    public int getEndColumn() {
+        return endColumn;
     }
 }
