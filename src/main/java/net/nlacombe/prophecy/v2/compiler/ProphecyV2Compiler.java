@@ -3,7 +3,6 @@ package net.nlacombe.prophecy.v2.compiler;
 import net.nlacombe.prophecy.v2.analyser.symboltable.SymbolTableBuilderV2;
 import net.nlacombe.prophecy.v2.analyser.type.TypeAnalyserV2;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilationErrorsException;
-import net.nlacombe.prophecy.v2.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.v2.generator.llvm.LlvmGenerator;
 import net.nlacombe.prophecy.v2.parser.ProphecyV2AstBuilder;
 import net.nlacombe.prophecy.v2.reporting.BuildMessageService;
@@ -30,7 +29,7 @@ public class ProphecyV2Compiler {
     /**
      * @throws ProphecyCompilationErrorsException, ProphecyCompilerException
      */
-    public ProphecyCompilerResult compile() {
+    public ProphecyCompilationResult compile() {
         try (var outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
             var buildMessageService = new BuildMessageService();
 
@@ -43,7 +42,7 @@ public class ProphecyV2Compiler {
 
             new LlvmGenerator().generate(outputStreamWriter, globalScope);
 
-            return new ProphecyCompilerResult(astRoot, globalScope);
+            return new ProphecyCompilationResult(astRoot, globalScope);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

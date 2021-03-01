@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class MethodSymbol extends ScopedSymbol
 {
-	private Map<SymbolSignature, Symbol> orderedParameters = new LinkedHashMap<SymbolSignature, Symbol>();
+	private Map<SymbolSignature, Symbol> orderedParameters = new LinkedHashMap<>();
 
 	/**
 	 * Class this method is defined in.
@@ -91,9 +91,8 @@ public class MethodSymbol extends ScopedSymbol
 
 		Type retType = getType();
 
-		if (retType != null) {
-			ret.append("<" + retType.toString() + ">");
-		}
+		if (retType != null)
+			ret.append("<").append(((Symbol) retType).getName()).append(">");
 
 		ret.append(super.getName());
 
@@ -117,7 +116,7 @@ public class MethodSymbol extends ScopedSymbol
 
 	public List<Symbol> getParameters()
 	{
-		List<Symbol> parameters = new ArrayList<Symbol>(orderedParameters.size());
+		List<Symbol> parameters = new ArrayList<>(orderedParameters.size());
 
         parameters.addAll(orderedParameters.values());
 
