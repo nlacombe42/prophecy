@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy.v2.reporting;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 
 public class SourceCodeLocation {
 
@@ -28,24 +29,22 @@ public class SourceCodeLocation {
 
     @Override
     public String toString() {
-        var text = "{ ";
+        var textParts = new ArrayList<String>();
 
         if (filePath != null)
-            text += "file: " + filePath;
+            textParts.add("file: " + filePath);
 
         if (startLine == endLine && startColumn == endColumn) {
-            text += ", line: " + startLine;
-            text += ", column: " + startColumn;
+            textParts.add("line: " + startLine);
+            textParts.add("column: " + startColumn);
         } else {
-            text += ", start line: " + startLine;
-            text += ", start column: " + startColumn;
-            text += ", end line: " + endLine;
-            text += ", end column: " + endColumn;
+            textParts.add("start line: " + startLine);
+            textParts.add("start column: " + startColumn);
+            textParts.add("end line: " + endLine);
+            textParts.add("end column: " + endColumn);
         }
 
-        text += " }";
-
-        return text;
+        return String.join(", ", textParts);
     }
 
     public Path getFilePath() {

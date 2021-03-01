@@ -3,12 +3,12 @@ package net.nlacombe.prophecy.v2.compiler;
 import net.nlacombe.prophecy.shared.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.v2.ast.node.ProphecyV2AstNode;
 
-public class ProphecyCompilerResult {
+public class ProphecyCompilationResult {
 
     private final ProphecyV2AstNode astRoot;
     private final GlobalScope globalScope;
 
-    public ProphecyCompilerResult(ProphecyV2AstNode astRoot, GlobalScope globalScope) {
+    public ProphecyCompilationResult(ProphecyV2AstNode astRoot, GlobalScope globalScope) {
         this.astRoot = astRoot;
         this.globalScope = globalScope;
     }

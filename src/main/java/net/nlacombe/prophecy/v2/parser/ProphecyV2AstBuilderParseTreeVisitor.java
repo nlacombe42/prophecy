@@ -92,11 +92,11 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
     }
 
     private SourceCodeLocation getSourceCodeLocation(ParserRuleContext parserRuleContext) {
-        var start = parserRuleContext.start;
-        var end = parserRuleContext.stop;
+        var firstToken = parserRuleContext.start;
+        var lastToken = parserRuleContext.stop;
 
         return SourceCodeLocation.fromRange(filePath,
-            start.getLine(), start.getCharPositionInLine() + 1,
-            end.getLine(), end.getCharPositionInLine() + 1);
+            firstToken.getLine(), firstToken.getCharPositionInLine() + 1,
+            lastToken.getLine(), lastToken.getCharPositionInLine() + lastToken.getText().length());
     }
 }
