@@ -8,6 +8,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public abstract class BaseScope implements Scope
 {
@@ -50,6 +51,9 @@ public abstract class BaseScope implements Scope
 	@Override
 	public void addChildScope(Scope child)
 	{
+	    if (children.contains(child))
+	        return;
+
 		children.add(child);
 	}
 
@@ -90,39 +94,27 @@ public abstract class BaseScope implements Scope
 
 	public String toString()
 	{
-		StringBuilder ret = new StringBuilder();
+	    if (symbols.isEmpty() && children.isEmpty())
+	        return  "";
 
-		ret.append("{");
+        var symbolsText = symbols.values().stream()
+            .map(Symbol::toString)
+            .collect(Collectors.joining("\n"));
 
-		int i = 0;
+        var scopesText = children.stream()
+            .filter(scope -> !(scope instanceof Symbol))
+            .map(Scope::toString)
+            .collect(Collectors.joining(""))
+            .indent(4);
 
-		for (Symbol symbol : symbols.values()) {
-			ret.append(symbol.toString());
+        var text = "";
 
-			if (i != symbols.size() - 1)
-				ret.append(", ");
+        if (!symbols.isEmpty())
+            text += symbolsText +  "\n";
 
-			i++;
-		}
+        if (!scopesText.isBlank())
+            text += "{\n" + scopesText + "}\n";
 
-		i = 0;
-		for (Scope child : children) {
-			if (child instanceof Symbol)
-				continue;
-
-			if (i == 0)
-				ret.append(", ");
-
-			ret.append(child.toString());
-
-			if (i != children.size() - 1)
-				ret.append(", ");
-
-			i++;
-		}
-
-		ret.append("}");
-
-		return ret.toString();
+        return text;
 	}
 }

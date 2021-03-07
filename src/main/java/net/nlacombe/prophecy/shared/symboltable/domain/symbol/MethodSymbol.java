@@ -3,6 +3,7 @@ package net.nlacombe.prophecy.shared.symboltable.domain.symbol;
 import net.nlacombe.prophecy.shared.symboltable.domain.MethodSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.SymbolSignature;
 import net.nlacombe.prophecy.shared.symboltable.domain.Type;
+import net.nlacombe.prophecy.shared.symboltable.domain.scope.LocalScope;
 import net.nlacombe.prophecy.shared.symboltable.domain.scope.Scope;
 import net.nlacombe.prophecy.v1.ast.nodewrapper.AstParam;
 
@@ -37,6 +38,13 @@ public class MethodSymbol extends ScopedSymbol
 
 		addChildScope(child);
 	}
+
+    public MethodSymbol(String name, Type retType, ClassSymbol parent, boolean autoLocalScope) {
+        this(name, retType, parent);
+
+        if (autoLocalScope)
+            addChildScope(new LocalScope(this));
+    }
 
     @Override
 	public Scope getEnclosingScope()
@@ -109,7 +117,14 @@ public class MethodSymbol extends ScopedSymbol
 		}
 
 		ret.append(")");
-		ret.append(getChildrenScopes().get(0).toString());
+
+        var localScope = (LocalScope) getChildrenScopes().get(0);
+
+		if (localScope != null && localScope.getSymbols() != null && !localScope.getSymbols().isEmpty()) {
+            ret.append("\n{\n").append(localScope.toString().indent(4)).append("}\n");
+        } else {
+		    ret.append(" {}");
+        }
 
 		return ret.toString();
 	}

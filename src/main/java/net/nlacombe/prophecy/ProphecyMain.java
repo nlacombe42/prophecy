@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy;
 
 import net.nlacombe.prophecy.v1.compiler.ProphecyCompiler;
+import net.nlacombe.prophecy.v2.compiler.ProphecyCompilationResult;
 import net.nlacombe.prophecy.v2.compiler.ProphecyV2Compiler;
 import net.nlacombe.prophecy.v2.exception.ProphecyCompilationErrorsException;
 import org.slf4j.Logger;
@@ -27,7 +28,10 @@ public class ProphecyMain {
             var fileOutputStream = new FileOutputStream("output.ll")
         ) {
             var compiler = new ProphecyV2Compiler(fileInputStream, inputFilePath, fileOutputStream);
-            compiler.compile();
+            var compilationResult = compiler.compile();
+
+            logger.info("ast root:<<<\n" + compilationResult.getAstRoot() + "\n>>>");
+            logger.info("global scope:<<<\n" + compilationResult.getGlobalScope() + "\n>>>");
         } catch (ProphecyCompilationErrorsException exception) {
             logger.error(exception.getMessage());
             System.exit(-1);

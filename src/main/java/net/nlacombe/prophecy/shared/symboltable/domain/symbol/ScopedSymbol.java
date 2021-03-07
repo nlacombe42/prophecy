@@ -47,6 +47,9 @@ public abstract class ScopedSymbol extends Symbol implements Scope
 	@Override
 	public void addChildScope(Scope child)
 	{
+	    if (children.contains(child))
+	        return;
+
 		children.add(child);
 	}
 
