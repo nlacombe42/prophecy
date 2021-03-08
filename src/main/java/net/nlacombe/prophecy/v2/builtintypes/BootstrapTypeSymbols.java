@@ -15,16 +15,16 @@ public class BootstrapTypeSymbols {
     private final ClassSymbol voidClass;
     private final ClassSymbol objectClass;
     private final ClassSymbol stringClass;
-    private final ClassSymbol integerClass;
-    private final MethodSymbol systemPrintlnInt;
+    private final ClassSymbol uInt8Class;
+    private final MethodSymbol systemPrintlnUInt8;
     private final MethodSymbol systemPrintlnString;
 
     private BootstrapTypeSymbols() {
         voidClass = new ClassSymbol("Void", null, null);
         objectClass = new ClassSymbol("Object", null, null);
-        integerClass = new ClassSymbol("Integer", null, objectClass);
+        uInt8Class = new ClassSymbol("UInt8", null, objectClass);
         stringClass = new ClassSymbol("String", null, objectClass);
-        systemPrintlnInt = getSystemPrintlnIntMethodSymbol(voidClass, integerClass);
+        systemPrintlnUInt8 = getSystemPrintlnUInt8MethodSymbol(voidClass, uInt8Class);
         systemPrintlnString = getSystemPrintlnStringMethodSymbol(voidClass, stringClass);
     }
 
@@ -36,13 +36,13 @@ public class BootstrapTypeSymbols {
     }
 
     public List<Symbol> getAll() {
-        return List.of(voidClass, objectClass, integerClass, stringClass, systemPrintlnInt, systemPrintlnString);
+        return List.of(voidClass, objectClass, uInt8Class, stringClass, systemPrintlnUInt8, systemPrintlnString);
     }
 
-    private MethodSymbol getSystemPrintlnIntMethodSymbol(ClassSymbol voidClass, ClassSymbol integerClass) {
+    private MethodSymbol getSystemPrintlnUInt8MethodSymbol(ClassSymbol voidClass, ClassSymbol uInt8Class) {
         var methodSymbol = new MethodSymbol("println", voidClass, null, new LocalScope(null));
         methodSymbol.setStatic(true);
-        methodSymbol.putMember(new VariableSymbol("i", integerClass));
+        methodSymbol.putMember(new VariableSymbol("i", uInt8Class));
 
         return methodSymbol;
     }
@@ -63,16 +63,16 @@ public class BootstrapTypeSymbols {
         return objectClass;
     }
 
-    public ClassSymbol getIntegerClass() {
-        return integerClass;
+    public ClassSymbol getUInt8Class() {
+        return uInt8Class;
     }
 
     public ClassSymbol getStringClass() {
         return stringClass;
     }
 
-    public MethodSymbol getSystemPrintlnInt() {
-        return systemPrintlnInt;
+    public MethodSymbol getSystemPrintlnUInt8() {
+        return systemPrintlnUInt8;
     }
 
     public MethodSymbol getSystemPrintlnString() {

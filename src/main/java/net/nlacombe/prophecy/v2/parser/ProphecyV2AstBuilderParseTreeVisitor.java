@@ -51,8 +51,12 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
     @Override
     public List<ProphecyV2AstNode> visitIntegerLiteral(ProphecyV2Parser.IntegerLiteralContext integerLiteralContext) {
         var sourceCodeLocation = getSourceCodeLocation(integerLiteralContext);
+        var literalValue = Integer.parseInt(integerLiteralContext.getText());
 
-        return List.of(new ProphecyV2IntegerLiteralAstNode(sourceCodeLocation, Integer.parseInt(integerLiteralContext.getText())));
+        if (literalValue < 0 || literalValue > 255)
+            buildMessageService.error(sourceCodeLocation, "integer literal out of bounds, must be [0-255]");
+
+        return List.of(new ProphecyV2IntegerLiteralAstNode(sourceCodeLocation, literalValue));
     }
 
     @Override

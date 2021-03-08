@@ -10,7 +10,7 @@ public class ProphecyV2IntegerLiteralAstNode extends AbstractProphecyV2Expressio
     private final int literalValue;
 
     public ProphecyV2IntegerLiteralAstNode(SourceCodeLocation definitionSourceCodeLocation, int literalValue) {
-        super(definitionSourceCodeLocation, BootstrapTypeSymbols.getInstance().getIntegerClass());
+        super(definitionSourceCodeLocation, BootstrapTypeSymbols.getInstance().getUInt8Class());
 
         this.literalValue = literalValue;
     }

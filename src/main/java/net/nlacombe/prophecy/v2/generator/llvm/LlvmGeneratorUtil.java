@@ -16,8 +16,8 @@ public class LlvmGeneratorUtil {
     public static String getLlvmType(Type type) {
         if (BootstrapTypeSymbols.getInstance().getVoidClass().equals(type))
             return "void";
-        if (BootstrapTypeSymbols.getInstance().getIntegerClass().equals(type))
-            return "i32";
+        if (BootstrapTypeSymbols.getInstance().getUInt8Class().equals(type))
+            return "i8";
         if (BootstrapTypeSymbols.getInstance().getStringClass().equals(type))
             return "i8*";
         else

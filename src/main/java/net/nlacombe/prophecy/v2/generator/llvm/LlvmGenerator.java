@@ -92,12 +92,12 @@ public class LlvmGenerator {
     private Map<MethodSignature, String> getCustomLlvmCodeByMethodSignature() {
         var customLlvmCodeByMethodSignature = new HashMap<MethodSignature, String>();
 
-        var printlnIntSystemMethodSymbol = BootstrapTypeSymbols.getInstance().getSystemPrintlnInt();
+        var printlnIntSystemMethodSymbol = BootstrapTypeSymbols.getInstance().getSystemPrintlnUInt8();
         customLlvmCodeByMethodSignature.put(printlnIntSystemMethodSymbol.getSignature(), """
             %1 = alloca [4 x i8]
             store [4 x i8] c"%d\\0A\\00", [4 x i8]* %1
             %2 = bitcast [4 x i8]* %1 to i8*
-            call i32 (i8*, ...) @printf(i8* %2, i32 %$argumentName)
+            call i32 (i8*, ...) @printf(i8* %2, i8 %$argumentName)
             ret void
             """
             .replace("$argumentName", printlnIntSystemMethodSymbol.getParameter(0).getName()));
