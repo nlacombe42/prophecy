@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.test.util;
 
-import net.nlacombe.prophecy.compiler.ProphecyV2Compiler;
+import net.nlacombe.prophecy.compiler.ProphecyCompiler;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;
@@ -18,7 +18,7 @@ public class TestUtil {
             var llvmCodeFilePath = Files.createTempFile("prophecy-test-llvm-output", ".ll");
             var outputStream = new FileOutputStream(llvmCodeFilePath.toFile());
 
-            var compiler = new ProphecyV2Compiler(inputStream, null, outputStream);
+            var compiler = new ProphecyCompiler(inputStream, null, outputStream);
             var compilationResult = compiler.compile();
 
             var programOutput = runLlvmCodeAndGetOutput(llvmCodeFilePath);

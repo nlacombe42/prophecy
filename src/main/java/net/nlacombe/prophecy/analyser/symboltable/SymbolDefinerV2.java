@@ -3,11 +3,11 @@ package net.nlacombe.prophecy.analyser.symboltable;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
-import net.nlacombe.prophecy.ast.ProphecyV2AstVisitor;
-import net.nlacombe.prophecy.ast.node.ProphecyV2AstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2FileAstNode;
+import net.nlacombe.prophecy.ast.ProphecyAstVisitor;
+import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 
-public class SymbolDefinerV2 extends ProphecyV2AstVisitor<Void> {
+public class SymbolDefinerV2 extends ProphecyAstVisitor<Void> {
 
     private final GlobalScope globalScope;
     private final MethodSymbol mainMethodSymbol;
@@ -22,12 +22,12 @@ public class SymbolDefinerV2 extends ProphecyV2AstVisitor<Void> {
     }
 
     @Override
-    protected void enterEveryAstNode(ProphecyV2AstNode node) {
+    protected void enterEveryAstNode(ProphecyAstNode node) {
         node.setEnclosingScope(currentScope);
     }
 
     @Override
-    protected Void visitFileAstNode(ProphecyV2FileAstNode node) {
+    protected Void visitFileAstNode(ProphecyFileAstNode node) {
         node.setGlobalScope(globalScope);
         mainMethodSymbol.setDefinitionAstNode(node);
 
@@ -37,7 +37,7 @@ public class SymbolDefinerV2 extends ProphecyV2AstVisitor<Void> {
     }
 
     @Override
-    protected Void defaultForNonImplementedNodeTypes(ProphecyV2AstNode node) {
+    protected Void defaultForNonImplementedNodeTypes(ProphecyAstNode node) {
         return null;
     }
 }

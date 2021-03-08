@@ -5,9 +5,9 @@ import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 
 import java.util.List;
 
-public interface ProphecyV2AstNode {
+public interface ProphecyAstNode {
 
-    List<ProphecyV2AstNode> getChildren();
+    List<ProphecyAstNode> getChildren();
 
     SourceCodeLocation getDefinitionSourceCodeLocation();
 

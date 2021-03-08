@@ -5,12 +5,12 @@ import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 
 import java.util.stream.Collectors;
 
-public abstract class AbstractProphecyV2AstNode implements ProphecyV2AstNode {
+public abstract class AbstractProphecyAstNode implements ProphecyAstNode {
 
     private final SourceCodeLocation definitionSourceCodeLocation;
     private Scope scope;
 
-    public AbstractProphecyV2AstNode(SourceCodeLocation definitionSourceCodeLocation) {
+    public AbstractProphecyAstNode(SourceCodeLocation definitionSourceCodeLocation) {
         this.definitionSourceCodeLocation = definitionSourceCodeLocation;
     }
 

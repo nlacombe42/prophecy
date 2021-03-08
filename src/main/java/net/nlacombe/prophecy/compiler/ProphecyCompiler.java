@@ -4,7 +4,7 @@ import net.nlacombe.prophecy.analyser.symboltable.SymbolTableBuilderV2;
 import net.nlacombe.prophecy.analyser.type.TypeAnalyserV2;
 import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
 import net.nlacombe.prophecy.generator.LlvmGenerator;
-import net.nlacombe.prophecy.parser.ProphecyV2AstBuilder;
+import net.nlacombe.prophecy.parser.ProphecyAstBuilder;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 
 import java.io.IOException;
@@ -14,13 +14,13 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
-public class ProphecyV2Compiler {
+public class ProphecyCompiler {
 
     private final InputStream inputStream;
     private final Path inputFilePath;
     private final OutputStream outputStream;
 
-    public ProphecyV2Compiler(InputStream inputStream, Path inputFilePath, OutputStream outputStream) {
+    public ProphecyCompiler(InputStream inputStream, Path inputFilePath, OutputStream outputStream) {
         this.inputStream = inputStream;
         this.inputFilePath = inputFilePath;
         this.outputStream = outputStream;
@@ -33,7 +33,7 @@ public class ProphecyV2Compiler {
         try (var outputStreamWriter = new OutputStreamWriter(outputStream, StandardCharsets.UTF_8)) {
             var buildMessageService = new BuildMessageService();
 
-            var astRoot = new ProphecyV2AstBuilder(inputStream, inputFilePath, buildMessageService).parse();
+            var astRoot = new ProphecyAstBuilder(inputStream, inputFilePath, buildMessageService).parse();
             var globalScope = new SymbolTableBuilderV2().buildSymbolTable(astRoot);
             new TypeAnalyserV2().evaluateTypesAndResolveCalls(astRoot, buildMessageService);
 

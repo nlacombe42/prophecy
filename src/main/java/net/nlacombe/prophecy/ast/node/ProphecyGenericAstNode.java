@@ -4,12 +4,12 @@ import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 
 import java.util.List;
 
-public class ProphecyV2GenericAstNode extends AbstractProphecyV2AstNode {
+public class ProphecyGenericAstNode extends AbstractProphecyAstNode {
 
-    private final List<ProphecyV2AstNode> children;
+    private final List<ProphecyAstNode> children;
     private final String typeName;
 
-    public ProphecyV2GenericAstNode(SourceCodeLocation definitionSourceCodeLocation, List<ProphecyV2AstNode> children, String typeName) {
+    public ProphecyGenericAstNode(SourceCodeLocation definitionSourceCodeLocation, List<ProphecyAstNode> children, String typeName) {
         super(definitionSourceCodeLocation);
         this.children = children;
         this.typeName = typeName;
@@ -19,7 +19,7 @@ public class ProphecyV2GenericAstNode extends AbstractProphecyV2AstNode {
         return typeName;
     }
 
-    public List<ProphecyV2AstNode> getChildren() {
+    public List<ProphecyAstNode> getChildren() {
         return children;
     }
 }

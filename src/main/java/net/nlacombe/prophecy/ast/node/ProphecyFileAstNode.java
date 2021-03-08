@@ -7,19 +7,19 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-public class ProphecyV2FileAstNode extends AbstractProphecyV2AstNode {
+public class ProphecyFileAstNode extends AbstractProphecyAstNode {
 
-    private final List<ProphecyV2AstNode> statements;
+    private final List<ProphecyAstNode> statements;
 
     private GlobalScope globalScope;
 
-    public ProphecyV2FileAstNode(SourceCodeLocation sourceCodeLocation, List<ProphecyV2AstNode> statements) {
+    public ProphecyFileAstNode(SourceCodeLocation sourceCodeLocation, List<ProphecyAstNode> statements) {
         super(sourceCodeLocation);
 
         this.statements = statements;
     }
 
-    public List<ProphecyV2AstNode> getStatements() {
+    public List<ProphecyAstNode> getStatements() {
         return statements;
     }
 
@@ -32,7 +32,7 @@ public class ProphecyV2FileAstNode extends AbstractProphecyV2AstNode {
     }
 
     @Override
-    public List<ProphecyV2AstNode> getChildren() {
+    public List<ProphecyAstNode> getChildren() {
         return statements;
     }
 

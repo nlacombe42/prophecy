@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.generator;
 
-import net.nlacombe.prophecy.ast.node.ProphecyV2FileAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
@@ -44,7 +44,7 @@ public class LlvmGenerator {
                 methodLlvmCode = customLlvmCode;
             } else {
                 var methodAstNode = methodSymbol.getDefinitionAstNode();
-                var fileAstNode = (ProphecyV2FileAstNode) methodAstNode;
+                var fileAstNode = (ProphecyFileAstNode) methodAstNode;
                 var llvmTemporaryNameGenerator = new LlvmTemporaryNameGenerator();
 
                 try (var stringWriter = new StringWriter()) {

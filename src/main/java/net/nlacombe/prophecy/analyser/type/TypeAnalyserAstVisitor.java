@@ -1,17 +1,17 @@
 package net.nlacombe.prophecy.analyser.type;
 
-import net.nlacombe.prophecy.ast.node.ProphecyV2ExpressionAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
-import net.nlacombe.prophecy.ast.ProphecyV2AstVisitor;
-import net.nlacombe.prophecy.ast.node.ProphecyV2AstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2CallAstNode;
+import net.nlacombe.prophecy.ast.ProphecyAstVisitor;
+import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 
 import java.util.stream.Collectors;
 
-public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
+public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
 
     private final BuildMessageService buildMessageService;
 
@@ -20,11 +20,11 @@ public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
     }
 
     @Override
-    protected Type visitCallAstNode(ProphecyV2CallAstNode node) {
+    protected Type visitCallAstNode(ProphecyCallAstNode node) {
         visitChildren(node);
 
         var parameterTypes = node.getArguments().stream()
-            .map(ProphecyV2ExpressionAstNode::getEvaluatedType)
+            .map(ProphecyExpressionAstNode::getEvaluatedType)
             .collect(Collectors.toList());
         var methodSignature = new MethodSignature(node.getMethodName(), parameterTypes);
         var methodCalled = node.getEnclosingScope().resolve(methodSignature);
@@ -45,7 +45,7 @@ public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
     }
 
     @Override
-    protected Type defaultForNonImplementedNodeTypes(ProphecyV2AstNode node) {
+    protected Type defaultForNonImplementedNodeTypes(ProphecyAstNode node) {
         return null;
     }
 }

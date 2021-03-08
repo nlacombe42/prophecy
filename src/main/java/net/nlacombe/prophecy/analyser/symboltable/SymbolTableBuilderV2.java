@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.analyser.symboltable;
 
-import net.nlacombe.prophecy.ast.node.ProphecyV2AstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.constants.ConstantsV2;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
@@ -8,7 +8,7 @@ import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 
 public class SymbolTableBuilderV2 {
 
-    public GlobalScope buildSymbolTable(ProphecyV2AstNode astRoot) {
+    public GlobalScope buildSymbolTable(ProphecyAstNode astRoot) {
         var globalScope = new GlobalScope();
 
         BootstrapTypeSymbols.getInstance().getAll().forEach(globalScope::define);

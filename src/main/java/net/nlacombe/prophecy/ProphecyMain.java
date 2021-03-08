@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy;
 
-import net.nlacombe.prophecy.compiler.ProphecyV2Compiler;
+import net.nlacombe.prophecy.compiler.ProphecyCompiler;
 import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class ProphecyMain {
             var fileInputStream = new FileInputStream(inputFilePath.toFile());
             var fileOutputStream = new FileOutputStream("output.ll")
         ) {
-            var compiler = new ProphecyV2Compiler(fileInputStream, inputFilePath, fileOutputStream);
+            var compiler = new ProphecyCompiler(fileInputStream, inputFilePath, fileOutputStream);
             var compilationResult = compiler.compile();
 
             logger.info("ast root:<<<\n" + compilationResult.getAstRoot() + "\n>>>");

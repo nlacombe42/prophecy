@@ -1,13 +1,13 @@
 package net.nlacombe.prophecy.parser;
 
-import net.nlacombe.prophecy.parser.antlr4.ProphecyV2BaseVisitor;
-import net.nlacombe.prophecy.parser.antlr4.ProphecyV2Parser;
-import net.nlacombe.prophecy.ast.node.ProphecyV2AstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2CallAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2ExpressionAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2FileAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2IntegerLiteralAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyV2StringLiteralAstNode;
+import net.nlacombe.prophecy.parser.antlr4.ProphecyBaseVisitor;
+import net.nlacombe.prophecy.parser.antlr4.ProphecyParser;
+import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyIntegerLiteralAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyStringLiteralAstNode;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.reporting.SourceCodeLocation;
@@ -18,23 +18,23 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<List<ProphecyV2AstNode>> {
+public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List<ProphecyAstNode>> {
 
     private final Path filePath;
     private final BuildMessageService buildMessageService;
 
-    public ProphecyV2AstBuilderParseTreeVisitor(Path filePath, BuildMessageService buildMessageService) {
+    public ProphecyAstBuilderParseTreeVisitor(Path filePath, BuildMessageService buildMessageService) {
         this.filePath = filePath;
         this.buildMessageService = buildMessageService;
     }
 
     @Override
-    public List<ProphecyV2AstNode> visitFile(ProphecyV2Parser.FileContext fileContext) {
-        return List.of(new ProphecyV2FileAstNode(getSourceCodeLocation(fileContext), visitChildren(fileContext)));
+    public List<ProphecyAstNode> visitFile(ProphecyParser.FileContext fileContext) {
+        return List.of(new ProphecyFileAstNode(getSourceCodeLocation(fileContext), visitChildren(fileContext)));
     }
 
     @Override
-    public List<ProphecyV2AstNode> visitCall(ProphecyV2Parser.CallContext callContext) {
+    public List<ProphecyAstNode> visitCall(ProphecyParser.CallContext callContext) {
         var sourceCodeLocation = getSourceCodeLocation(callContext);
 
         var argumentNodes = visitChildren(callContext);
@@ -42,25 +42,25 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
         validateArgumentsAreExpressions(sourceCodeLocation, argumentNodes);
 
         var expressionArgumentNodes = argumentNodes.stream()
-            .map(node -> (ProphecyV2ExpressionAstNode) node)
+            .map(node -> (ProphecyExpressionAstNode) node)
             .collect(Collectors.toList());
 
-        return List.of(new ProphecyV2CallAstNode(sourceCodeLocation, callContext.methodName.getText(), expressionArgumentNodes));
+        return List.of(new ProphecyCallAstNode(sourceCodeLocation, callContext.methodName.getText(), expressionArgumentNodes));
     }
 
     @Override
-    public List<ProphecyV2AstNode> visitIntegerLiteral(ProphecyV2Parser.IntegerLiteralContext integerLiteralContext) {
+    public List<ProphecyAstNode> visitIntegerLiteral(ProphecyParser.IntegerLiteralContext integerLiteralContext) {
         var sourceCodeLocation = getSourceCodeLocation(integerLiteralContext);
         var literalValue = Integer.parseInt(integerLiteralContext.getText());
 
         if (literalValue < 0 || literalValue > 255)
             buildMessageService.error(sourceCodeLocation, "integer literal out of bounds, must be [0-255]");
 
-        return List.of(new ProphecyV2IntegerLiteralAstNode(sourceCodeLocation, literalValue));
+        return List.of(new ProphecyIntegerLiteralAstNode(sourceCodeLocation, literalValue));
     }
 
     @Override
-    public List<ProphecyV2AstNode> visitStringLiteral(ProphecyV2Parser.StringLiteralContext stringLiteralContext) {
+    public List<ProphecyAstNode> visitStringLiteral(ProphecyParser.StringLiteralContext stringLiteralContext) {
         var sourceCodeLocation = getSourceCodeLocation(stringLiteralContext);
         var stringSourceText = stringLiteralContext.getText().substring(1, stringLiteralContext.getText().length() - 1);
 
@@ -73,22 +73,22 @@ public class ProphecyV2AstBuilderParseTreeVisitor extends ProphecyV2BaseVisitor<
             buildMessageService.error(sourceCodeLocation, e.getMessage());
         }
 
-        return List.of(new ProphecyV2StringLiteralAstNode(sourceCodeLocation, stringSourceText));
+        return List.of(new ProphecyStringLiteralAstNode(sourceCodeLocation, stringSourceText));
     }
 
     @Override
-    protected List<ProphecyV2AstNode> aggregateResult(List<ProphecyV2AstNode> aggregate, List<ProphecyV2AstNode> nextResult) {
+    protected List<ProphecyAstNode> aggregateResult(List<ProphecyAstNode> aggregate, List<ProphecyAstNode> nextResult) {
         return ListUtils.union(aggregate, nextResult);
     }
 
     @Override
-    protected List<ProphecyV2AstNode> defaultResult() {
+    protected List<ProphecyAstNode> defaultResult() {
         return List.of();
     }
 
-    private void validateArgumentsAreExpressions(SourceCodeLocation sourceCodeLocation, List<ProphecyV2AstNode> argumentNodes) {
+    private void validateArgumentsAreExpressions(SourceCodeLocation sourceCodeLocation, List<ProphecyAstNode> argumentNodes) {
         var nonExpressionArgumentNodes = argumentNodes.stream()
-            .filter(argumentNode -> !(argumentNode instanceof ProphecyV2ExpressionAstNode))
+            .filter(argumentNode -> !(argumentNode instanceof ProphecyExpressionAstNode))
             .collect(Collectors.toList());
 
         if (!nonExpressionArgumentNodes.isEmpty())

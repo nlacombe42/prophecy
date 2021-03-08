@@ -6,11 +6,11 @@ import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 
 import java.util.List;
 
-public class ProphecyV2StringLiteralAstNode extends AbstractProphecyV2ExpressionAstNode {
+public class ProphecyStringLiteralAstNode extends AbstractProphecyExpressionAstNode {
 
     private final String sourceText;
 
-    public ProphecyV2StringLiteralAstNode(SourceCodeLocation definitionSourceCodeLocation, String sourceText) {
+    public ProphecyStringLiteralAstNode(SourceCodeLocation definitionSourceCodeLocation, String sourceText) {
         super(definitionSourceCodeLocation, BootstrapTypeSymbols.getInstance().getStringClass());
 
         this.sourceText = sourceText;
@@ -25,7 +25,7 @@ public class ProphecyV2StringLiteralAstNode extends AbstractProphecyV2Expression
     }
 
     @Override
-    public List<ProphecyV2AstNode> getChildren() {
+    public List<ProphecyAstNode> getChildren() {
         return List.of();
     }
 
