@@ -1,12 +1,15 @@
 package net.nlacombe.prophecy.analyser.type;
 
-import net.nlacombe.prophecy.symboltable.domain.MethodSignature;
+import net.nlacombe.prophecy.ast.node.ProphecyV2ExpressionAstNode;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.ast.ProphecyV2AstVisitor;
 import net.nlacombe.prophecy.ast.node.ProphecyV2AstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyV2CallAstNode;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
+
+import java.util.stream.Collectors;
 
 public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
 
@@ -20,9 +23,10 @@ public class TypeAnalyserAstVisitor extends ProphecyV2AstVisitor<Type> {
     protected Type visitCallAstNode(ProphecyV2CallAstNode node) {
         visitChildren(node);
 
-        var methodSignature = new MethodSignature(node.getMethodName());
-        node.getArguments().forEach(argumentNode -> methodSignature.addParameter(argumentNode.getEvaluatedType()));
-
+        var parameterTypes = node.getArguments().stream()
+            .map(ProphecyV2ExpressionAstNode::getEvaluatedType)
+            .collect(Collectors.toList());
+        var methodSignature = new MethodSignature(node.getMethodName(), parameterTypes);
         var methodCalled = node.getEnclosingScope().resolve(methodSignature);
 
         if (methodCalled == null) {

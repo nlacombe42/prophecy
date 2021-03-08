@@ -40,17 +40,15 @@ public class BootstrapTypeSymbols {
     }
 
     private MethodSymbol getSystemPrintlnUInt8MethodSymbol(ClassSymbol voidClass, ClassSymbol uInt8Class) {
-        var methodSymbol = new MethodSymbol("println", voidClass, null, new LocalScope(null));
-        methodSymbol.setStatic(true);
-        methodSymbol.putMember(new VariableSymbol("i", uInt8Class));
+        var methodSymbol = MethodSymbol.newGlobalMethod("println", voidClass, null);
+        methodSymbol.putParameter(new VariableSymbol("i", uInt8Class));
 
         return methodSymbol;
     }
 
     private MethodSymbol getSystemPrintlnStringMethodSymbol(ClassSymbol voidClass, ClassSymbol stringClass) {
-        var methodSymbol = new MethodSymbol("println", voidClass, null, new LocalScope(null));
-        methodSymbol.setStatic(true);
-        methodSymbol.putMember(new VariableSymbol("s", stringClass));
+        var methodSymbol = MethodSymbol.newGlobalMethod("println", voidClass, null);
+        methodSymbol.putParameter(new VariableSymbol("s", stringClass));
 
         return methodSymbol;
     }

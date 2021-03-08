@@ -1,14 +1,8 @@
 package net.nlacombe.prophecy.symboltable.domain.scope;
 
-public class GlobalScope extends BaseScope
-{
-	public GlobalScope()
-	{
-		super(null);
-	}
+public class GlobalScope extends AbstractScope {
 
-	public String getScopeName()
-	{
-		return "global";
-	}
+    public GlobalScope() {
+        super(null);
+    }
 }

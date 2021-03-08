@@ -1,220 +1,113 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignature;
+import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.symboltable.domain.Type;
-import net.nlacombe.prophecy.symboltable.domain.scope.ClassScope;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
+import net.nlacombe.prophecy.symboltable.domain.signature.NameOnlySymbolSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
+import org.apache.commons.collections4.ListUtils;
 
-import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
-public class ClassSymbol extends Symbol implements Scope, Type
-{
-	/**
-	 * This is the superclass not enclosingScope field. We still record the
-	 * enclosing scope so we can push in and pop out of class defs.
-	 */
-	private ClassSymbol superClass;
+public class ClassSymbol extends Symbol implements Scope, Type {
 
-	private ClassScope staticScope;
-	private ClassScope instanceScope;
+    private ClassSymbol superClass;
+    private final Scope enclosingScope;
+    private final Map<SymbolSignature, Symbol> members;
 
-	/**
-	 * True if this is a class defined by the system/language.
-	 * <p>
-	 * Those classes are special classes that are not generated the same way.
-	 */
-	private boolean isSystem;
+    public ClassSymbol(String name, Scope enclosingScope, ClassSymbol superClass) {
+        super(name);
 
-	public ClassSymbol(String name, Scope enclosingScope, ClassSymbol superClass)
-	{
-		super(name);
+        this.superClass = superClass;
+        this.enclosingScope = enclosingScope;
 
-		staticScope = new ClassScope(enclosingScope, superClass, true);
-		instanceScope = new ClassScope(staticScope, superClass, false);
-
-		this.superClass = superClass;
-	}
-
-    public ClassSymbol(String name, Scope enclosingScope, ClassSymbol superClass, boolean isSystem) {
-	    this(name, enclosingScope, superClass);
-
-	    this.isSystem = isSystem;
+        members = new LinkedHashMap<>();
     }
 
-	public ClassSymbol getSuperClass()
-	{
-		return superClass;
-	}
+    public List<ClassSymbol> getSuperClasses() {
+        if (superClass == null)
+            return List.of();
 
-	public void setSuperClass(ClassSymbol superClass)
-	{
-		this.superClass = superClass;
-	}
+        return ListUtils.union(superClass.getSuperClasses(), List.of(superClass));
+    }
 
-	/**
-	 * Gets all the super classes in the super class chain.
-	 */
-	public List<ClassSymbol> getSuperClasses()
-	{
-		if (superClass == null)
-			return new ArrayList<ClassSymbol>(0);
+    public boolean isInstanceOf(ClassSymbol classSymbol) {
+        if (equals(classSymbol))
+            return true;
 
-		List<ClassSymbol> superClasses = superClass.getSuperClasses();
-		superClasses.add(superClass);
+        if (superClass == null)
+            return false;
 
-		return superClasses;
-	}
+        return superClass.isInstanceOf(classSymbol);
+    }
 
-	@Override
-	public String toString()
-	{
-		StringBuilder ret = new StringBuilder();
+    @Override
+    public List<Scope> getChildrenScopes() {
+        return List.of();
+    }
 
-		if (superClass != null)
-			ret.append("<" + superClass.getName() + ">");
+    @Override
+    public SymbolSignature getSignature() {
+        return new NameOnlySymbolSignature(getName());
+    }
 
-		ret.append("class " + getName() + "{ static " + staticScope + ", " + instanceScope.toString(false) + " }");
+    @Override
+    public boolean canAssignTo(Type type) {
+        if (equals(type))
+            return true;
 
-		return ret.toString();
-	}
+        if (!(type instanceof ClassSymbol))
+            return false;
 
-	public boolean isInstanceOf(ClassSymbol classSymbol)
-	{
-		if (this.equals(classSymbol))
-			return true;
+        return isInstanceOf((ClassSymbol) type);
+    }
 
-		if (superClass == null)
-			return false;
+    @Override
+    public Scope getParentScope() {
+        return superClass != null ? superClass : enclosingScope;
+    }
 
-		return superClass.isInstanceOf(classSymbol);
-	}
+    @Override
+    public Scope getEnclosingScope() {
+        return enclosingScope;
+    }
 
-	@Override
-	public boolean canAssignTo(Type type)
-	{
-		if (this.equals(type))
-			return true;
+    @Override
+    public Symbol define(Symbol symbol) {
+        throw new ProphecyCompilerException("unimplemented");
+    }
 
-		if (!(type instanceof ClassSymbol))
-			return false;
+    @Override
+    public Symbol resolve(SymbolSignature signature) {
+        var symbol = members.get(signature);
 
-		return isInstanceOf((ClassSymbol) type);
-	}
+        if (symbol != null)
+            return symbol;
 
-	public boolean isSystem()
-	{
-		return isSystem;
-	}
+        var parentScope = getParentScope();
 
-	public void setSystem(boolean isSystem)
-	{
-		this.isSystem = isSystem;
-	}
+        return parentScope == null ? null : parentScope.resolve(signature);
+    }
 
-	@Override
-	public String getScopeName()
-	{
-		return getName();
-	}
+    @Override
+    public String toString() {
+        var text = new StringBuilder();
 
-	@Override
-	public Scope getParentScope()
-	{
-		//This is equivalent to staticScope
-		return instanceScope.getParentScope();
-	}
+        if (superClass != null)
+            text.append("<").append(superClass.getName()).append(">");
 
-	@Override
-	public Scope getEnclosingScope()
-	{
-		return staticScope.getEnclosingScope();
-	}
+        text.append("class ").append(getName()).append("{ !unimplemented! }");
 
-	@Override
-	public List<Scope> getChildrenScopes()
-	{
-		return instanceScope.getChildrenScopes();
-	}
+        return text.toString();
+    }
 
-	@Override
-	public void addChildScope(Scope child)
-	{
-		instanceScope.addChildScope(child);
-	}
+    public ClassSymbol getSuperClass() {
+        return superClass;
+    }
 
-	/**
-	 * Defines a symbol in this class' static scope.
-	 */
-	public Symbol defineStatic(Symbol symbol)
-	{
-		return staticScope.define(symbol);
-	}
-
-	/**
-	 * Defines a symbol in this class' instance scope.
-	 */
-	@Override
-	public Symbol define(Symbol symbol)
-	{
-		return instanceScope.define(symbol);
-	}
-
-	/**
-	 * Resolve symbol in this class' static scope.
-	 */
-	public Symbol resolveStatic(SymbolSignature signature)
-	{
-		return staticScope.resolve(signature);
-	}
-
-	/**
-	 * Resolve symbol in this class' instance scope.
-	 */
-	@Override
-	public Symbol resolve(SymbolSignature signature)
-	{
-		return instanceScope.resolve(signature);
-	}
-
-	public Symbol getMember(SymbolSignature signature)
-	{
-		return instanceScope.getMember(signature);
-	}
-
-	public void putMember(Symbol symbol)
-	{
-		instanceScope.putMember(symbol);
-	}
-
-	public boolean containsMember(Symbol symbol)
-	{
-		return instanceScope.containsMember(symbol);
-	}
-
-	public Symbol resolveMember(SymbolSignature signature)
-	{
-		return instanceScope.resolveMember(signature);
-	}
-
-	public Set<MethodSymbol> resolveMethods(String name)
-	{
-		return instanceScope.resolveMethods(name);
-	}
-
-	public List<MethodSymbol> getInstanceMethods()
-	{
-		return instanceScope.getMethods();
-	}
-
-	public List<MethodSymbol> getStaticMethods()
-	{
-		return staticScope.getMethods();
-	}
-
-	public List<Symbol> getMembers()
-	{
-		return instanceScope.getMembers();
-	}
+    public void setSuperClass(ClassSymbol superClass) {
+        this.superClass = superClass;
+    }
 }

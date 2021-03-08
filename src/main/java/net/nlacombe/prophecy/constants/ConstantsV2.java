@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.constants;
 
-import net.nlacombe.prophecy.symboltable.domain.MethodSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 
 import java.util.List;
 

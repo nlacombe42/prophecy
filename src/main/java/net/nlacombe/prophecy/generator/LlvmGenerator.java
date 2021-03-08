@@ -2,7 +2,7 @@ package net.nlacombe.prophecy.generator;
 
 import net.nlacombe.prophecy.ast.node.ProphecyV2FileAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
-import net.nlacombe.prophecy.symboltable.domain.MethodSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;

@@ -1,7 +1,7 @@
 package net.nlacombe.prophecy.generator;
 
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
-import net.nlacombe.prophecy.symboltable.domain.MethodSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
@@ -69,7 +69,7 @@ public class LlvmGeneratorUtil {
             .map(Type::getName)
             .collect(Collectors.toList());
 
-        return ListUtils.union(List.of(signature.getName()), parameterNameParts);
+        return ListUtils.union(List.of(signature.getMethodName()), parameterNameParts);
     }
 
     private static String getLlvmNamePartSeparator() {

@@ -1,13 +1,13 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
 import net.nlacombe.prophecy.ast.node.ProphecyV2AstNode;
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
 
-public class Symbol {
+public abstract class Symbol {
 
-    private String name;
+    private final String name;
     private Type type;
     private Scope scope;
     private ProphecyV2AstNode definitionAstNode;
@@ -20,6 +20,8 @@ public class Symbol {
         this(name);
         this.type = type;
     }
+
+    abstract public SymbolSignature getSignature();
 
     public String getName() {
         return name;
@@ -47,10 +49,6 @@ public class Symbol {
 
     public void setDefinitionAstNode(ProphecyV2AstNode definitionAstNode) {
         this.definitionAstNode = definitionAstNode;
-    }
-
-    public SymbolSignature getSignature() {
-        return new SymbolSignature(name);
     }
 
     public String toString() {

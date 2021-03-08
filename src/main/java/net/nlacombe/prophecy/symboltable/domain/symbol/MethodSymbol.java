@@ -1,8 +1,9 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
-import net.nlacombe.prophecy.symboltable.domain.MethodSignature;
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignature;
+import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.LocalScope;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
@@ -11,163 +12,124 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
-public class MethodSymbol extends ScopedSymbol
-{
-	private Map<SymbolSignature, Symbol> orderedParameters = new LinkedHashMap<>();
+public class MethodSymbol extends Symbol implements Scope {
 
-	/**
-	 * Class this method is defined in.
-	 */
-	private ClassSymbol parentClass;
+    private final boolean isStatic;
+    private final Map<SymbolSignature, Symbol> orderedParameters;
+    private final LocalScope methodBodyScope;
+    private final ClassSymbol parentClass;
+    private final GlobalScope globalScope;
 
-	private boolean isStatic;
+    private MethodSymbol(String methodName, Type returnType, ClassSymbol parentClass, GlobalScope globalScope, boolean isStatic) {
+        super(methodName, returnType);
 
-	public MethodSymbol(String name, Type retType, ClassSymbol parent)
-	{
-		super(name, retType);
+        if (parentClass != null && globalScope != null)
+            throw new ProphecyCompilerException("a method is either global or defined in a class");
 
-		parentClass = parent;
+        this.parentClass = parentClass;
+        this.globalScope = globalScope;
+        this.isStatic = isStatic;
 
-		isStatic = false;
-	}
+        orderedParameters = new LinkedHashMap<>();
+        methodBodyScope = new LocalScope(null);
+    }
 
-	public MethodSymbol(String name, Type retType, ClassSymbol parent, Scope child)
-	{
-		this(name, retType, parent);
+    public static MethodSymbol newClassMethod(String methodName, Type returnType, ClassSymbol parentClass, boolean isStatic) {
+        return new MethodSymbol(methodName, returnType, parentClass, null, isStatic);
+    }
 
-		addChildScope(child);
-	}
-
-    public MethodSymbol(String name, Type retType, ClassSymbol parent, boolean autoLocalScope) {
-        this(name, retType, parent);
-
-        if (autoLocalScope)
-            addChildScope(new LocalScope(this));
+    public static MethodSymbol newGlobalMethod(String methodName, Type returnType, GlobalScope globalScope) {
+        return new MethodSymbol(methodName, returnType, null, globalScope, true);
     }
 
     @Override
-	public Scope getEnclosingScope()
-	{
-		return parentClass;
-	}
+    public Symbol resolve(SymbolSignature signature) {
+        var symbol = getParameter(signature);
 
-	/**
-	 * Gets the class this method is defined in.
-	 */
-	public ClassSymbol getParentClass()
-	{
-		return parentClass;
-	}
+        if (symbol != null)
+            return symbol;
 
-	/**
-	 * Returns the method's identifier (name).
-	 */
-	public String getName()
-	{
-		return super.getName();
-	}
+        if (getParentScope() != null)
+            return getParentScope().resolve(signature);
 
-	/**
-	 * Returns method signature.
-	 */
-	@Override
-	public MethodSignature getSignature()
-	{
-		MethodSignature signature = new MethodSignature(super.getName());
-
-		for (Symbol parameter : orderedParameters.values()) {
-			/* If parameter type has been resolved add the type to the signature
-			 * otherwise add the parameter type name.
-			 */
-
-			if (parameter.getType() != null)
-				signature.addParameter(parameter.getType());
-			else {
-			    throw new ProphecyCompilerException("unimplemented");
-//				AstParam param = new AstParam(parameter.getDefinition());
-//
-//				signature.addParameter(param.getTypeText());
-			}
-		}
-
-		return signature;
-	}
-
-	public String toString()
-	{
-		StringBuilder ret = new StringBuilder();
-
-		Type retType = getType();
-
-		if (retType != null)
-			ret.append("<").append(((Symbol) retType).getName()).append(">");
-
-		ret.append(super.getName());
-
-		ret.append("(");
-
-		int i = 0;
-		for (Symbol arg : orderedParameters.values()) {
-			ret.append(arg.toString());
-
-			if (i != orderedParameters.size() - 1)
-				ret.append(", ");
-
-			i++;
-		}
-
-		ret.append(")");
-
-        var localScope = (LocalScope) getChildrenScopes().get(0);
-
-		if (localScope != null && localScope.getSymbols() != null && !localScope.getSymbols().isEmpty()) {
-            ret.append("\n{\n").append(localScope.toString().indent(4)).append("}\n");
-        } else {
-		    ret.append(" {}");
-        }
-
-		return ret.toString();
-	}
-
-	public List<Symbol> getParameters()
-	{
-		List<Symbol> parameters = new ArrayList<>(orderedParameters.size());
-
-        parameters.addAll(orderedParameters.values());
-
-		return parameters;
-	}
-
-	public Symbol getParameter(int index) {
-	    return getParameters().get(index);
+        return null;
     }
 
-	@Override
-	public Symbol getMember(SymbolSignature signature)
-	{
-		return orderedParameters.get(signature);
-	}
+    @Override
+    public Symbol define(Symbol symbol) {
+        var previouslyDefined = getParameter(symbol.getSignature());
 
-	@Override
-	public void putMember(Symbol symbol)
-	{
-		orderedParameters.put(symbol.getSignature(), symbol);
-	}
+        putParameter(symbol);
 
-	@Override
-	public boolean containsMember(Symbol symbol)
-	{
-		return orderedParameters.containsKey(symbol.getSignature());
-	}
+        symbol.setScope(this);
 
-	public boolean isStatic()
-	{
-		return isStatic;
-	}
+        return previouslyDefined;
+    }
 
-	public void setStatic(boolean isStatic)
-	{
-		this.isStatic = isStatic;
-	}
+    @Override
+    public List<Scope> getChildrenScopes() {
+        return List.of(methodBodyScope);
+    }
+
+    @Override
+    public Scope getParentScope() {
+        return parentClass != null ? parentClass : globalScope;
+    }
+
+    @Override
+    public Scope getEnclosingScope() {
+        return getParentScope();
+    }
+
+    public ClassSymbol getParentClass() {
+        return parentClass;
+    }
+
+    @Override
+    public MethodSignature getSignature() {
+        var parameterTypes = orderedParameters.values().stream()
+            .map(Symbol::getType)
+            .collect(Collectors.toList());
+
+        return new MethodSignature(getMethodName(), parameterTypes);
+    }
+
+    public String toString() {
+        var parametersText = orderedParameters.values().stream()
+            .map(Symbol::toString)
+            .collect(Collectors.joining(", "));
+        var scopeText = methodBodyScope.getSymbols().isEmpty() ? " {}" : "\n{\n" + methodBodyScope.toString().indent(4) + "}\n";
+
+        return "" + getReturnType().getName() + " " + getMethodName() + "(" + parametersText + ")" + scopeText;
+    }
+
+    public List<Symbol> getParameters() {
+        return new ArrayList<>(orderedParameters.values());
+    }
+
+    public Symbol getParameter(int index) {
+        return getParameters().get(index);
+    }
+
+    public Symbol getParameter(SymbolSignature signature) {
+        return orderedParameters.get(signature);
+    }
+
+    public void putParameter(Symbol symbol) {
+        orderedParameters.put(symbol.getSignature(), symbol);
+    }
+
+    public String getMethodName() {
+        return getName();
+    }
+
+    public Type getReturnType() {
+        return getType();
+    }
+
+    public boolean isStatic() {
+        return isStatic;
+    }
 }

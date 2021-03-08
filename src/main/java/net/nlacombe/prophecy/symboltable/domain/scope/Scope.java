@@ -1,44 +1,20 @@
 package net.nlacombe.prophecy.symboltable.domain.scope;
 
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignature;
+import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
 import java.util.List;
 
-public interface Scope
-{
-	public String getScopeName();
+public interface Scope {
 
-	/**
-	 * Where to look next for symbols; superclass or enclosing scope
-	 */
-	public Scope getParentScope();
+    Scope getParentScope();
 
-	/**
-	 * Scope in which this scope defined. For global scope, it's null
-	 */
-	public Scope getEnclosingScope();
+    Scope getEnclosingScope();
 
-	public List<Scope> getChildrenScopes();
+    List<Scope> getChildrenScopes();
 
-	public void addChildScope(Scope child);
+    Symbol define(Symbol symbol);
 
-	/**
-	 * Define the specified symbol in this scope.
-	 * <p>
-	 * If a symbol with the same identifier/signature already exists
-	 * in this scope, it will be replaced and the replaced symbol will be returned.
-	 *
-	 * @return If a symbol with the same name was previously defined,
-	 * it returns the previously defined symbol. Otherwise,
-	 * it returns null.
-	 */
-	public Symbol define(Symbol symbol);
+    Symbol resolve(SymbolSignature signature);
 
-	/**
-	 * Look up signature in this scope or in parent scope if not here.
-	 *
-	 * @return the resolved Symbol or null if the SymbolSignature cannot be resolved.
-	 */
-	public Symbol resolve(SymbolSignature signature);
 }
