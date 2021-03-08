@@ -1,6 +1,6 @@
 package net.nlacombe.prophecy.test.util;
 
-import net.nlacombe.prophecy.v2.compiler.ProphecyV2Compiler;
+import net.nlacombe.prophecy.compiler.ProphecyV2Compiler;
 import org.apache.commons.io.IOUtils;
 
 import java.io.ByteArrayInputStream;

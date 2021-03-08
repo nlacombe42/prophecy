@@ -1,7 +1,7 @@
 package net.nlacombe.prophecy.test.integrationtests;
 
 import net.nlacombe.prophecy.test.util.TestUtil;
-import net.nlacombe.prophecy.v2.exception.ProphecyCompilationErrorsException;
+import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
 import org.junit.jupiter.api.Test;
 
 import java.util.Random;

@@ -1,9 +1,7 @@
 package net.nlacombe.prophecy;
 
-import net.nlacombe.prophecy.v1.compiler.ProphecyCompiler;
-import net.nlacombe.prophecy.v2.compiler.ProphecyCompilationResult;
-import net.nlacombe.prophecy.v2.compiler.ProphecyV2Compiler;
-import net.nlacombe.prophecy.v2.exception.ProphecyCompilationErrorsException;
+import net.nlacombe.prophecy.compiler.ProphecyV2Compiler;
+import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,11 +15,7 @@ public class ProphecyMain {
     private static final Logger logger = LoggerFactory.getLogger(ProphecyMain.class);
 
     public static void main(String[] args) {
-        executeProphecyV2Compiler();
-    }
-
-    private static void executeProphecyV2Compiler() {
-        var inputFilePath = Path.of("inputv2.txt");
+        var inputFilePath = Path.of("input.txt");
 
         try (
             var fileInputStream = new FileInputStream(inputFilePath.toFile());
@@ -40,15 +34,4 @@ public class ProphecyMain {
         }
     }
 
-    private static void executeProphecyV1Compiler() {
-        try {
-            var fileInputStream = new FileInputStream("input.txt");
-            var fileOutputStream = new FileOutputStream("output.ll");
-
-            var compiler = new ProphecyCompiler(fileInputStream, fileOutputStream);
-            compiler.compile();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
 }

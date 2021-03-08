@@ -1,25 +1,7 @@
-class Prophecy
-{
-	// int test;
-	
-	char addChar(char a, char b)
-	{
-		return a+b;
-	}
-	
-	int add(int a, int b)
-	{
-		return a+b;
-	}
+println(1)
+println(2)
+println(3)
+println("line 4 :) <3")
+println("line 5 :D it works!")
 
-	static main()
-	{
-		// Prophecy p;
-		int a=2;
-		int b=5;
-		
-		// system.println(p.add(a, b));
-
-		system.println(a+b);
-	}
-}
+println("dat\n\t\tfancy\texample\\with\"quotes?\" and 'those too' lastly\rcarriage")
