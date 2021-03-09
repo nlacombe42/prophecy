@@ -1,19 +1,19 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
-import net.nlacombe.prophecy.exception.ProphecyCompilerException;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
 import net.nlacombe.prophecy.symboltable.domain.signature.NameOnlySymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
-import org.apache.commons.collections4.ListUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class ClassSymbol extends Symbol implements Scope, Type {
 
-    private ClassSymbol superClass;
+    private final ClassSymbol superClass;
     private final Scope enclosingScope;
     private final Map<SymbolSignature, Symbol> members;
 
@@ -24,13 +24,6 @@ public class ClassSymbol extends Symbol implements Scope, Type {
         this.enclosingScope = enclosingScope;
 
         members = new LinkedHashMap<>();
-    }
-
-    public List<ClassSymbol> getSuperClasses() {
-        if (superClass == null)
-            return List.of();
-
-        return ListUtils.union(superClass.getSuperClasses(), List.of(superClass));
     }
 
     public boolean isInstanceOf(ClassSymbol classSymbol) {
@@ -45,7 +38,10 @@ public class ClassSymbol extends Symbol implements Scope, Type {
 
     @Override
     public List<Scope> getChildrenScopes() {
-        return List.of();
+        return members.values().stream()
+            .filter(member -> member instanceof Scope)
+            .map(member -> (Scope) member)
+            .collect(Collectors.toList());
     }
 
     @Override
@@ -75,8 +71,13 @@ public class ClassSymbol extends Symbol implements Scope, Type {
     }
 
     @Override
-    public Symbol define(Symbol symbol) {
-        throw new ProphecyCompilerException("unimplemented");
+    public void define(Symbol symbol) {
+        var alreadyDefinedSymbol = members.get(symbol.getSignature());
+
+        if (alreadyDefinedSymbol != null)
+            throw new SymbolSignatureAlreadyDefined(alreadyDefinedSymbol);
+
+        members.put(symbol.getSignature(), symbol);
     }
 
     @Override
@@ -93,21 +94,12 @@ public class ClassSymbol extends Symbol implements Scope, Type {
 
     @Override
     public String toString() {
-        var text = new StringBuilder();
+        var superClassText = superClass == null ? "" : " extends " + superClass.getName();
 
-        if (superClass != null)
-            text.append("<").append(superClass.getName()).append(">");
-
-        text.append("class ").append(getName()).append("{ !unimplemented! }");
-
-        return text.toString();
+        return "class " + getName() + superClassText + " " + Scope.toString(Map.of(), List.of());
     }
 
     public ClassSymbol getSuperClass() {
         return superClass;
-    }
-
-    public void setSuperClass(ClassSymbol superClass) {
-        this.superClass = superClass;
     }
 }

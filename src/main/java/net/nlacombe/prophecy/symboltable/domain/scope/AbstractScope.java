@@ -1,5 +1,6 @@
 package net.nlacombe.prophecy.symboltable.domain.scope;
 
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
 import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
@@ -49,13 +50,15 @@ public abstract class AbstractScope implements Scope {
         return null;
     }
 
-    public Symbol define(Symbol symbol) {
+    @Override
+    public void define(Symbol symbol) {
         var previouslyDefined = symbols.get(symbol.getSignature());
+
+        if (previouslyDefined != null)
+            throw new SymbolSignatureAlreadyDefined(previouslyDefined);
 
         symbols.put(symbol.getSignature(), symbol);
         symbol.setScope(this);
-
-        return previouslyDefined;
     }
 
     public Scope getParentScope() {
@@ -67,27 +70,6 @@ public abstract class AbstractScope implements Scope {
     }
 
     public String toString() {
-        if (symbols.isEmpty() && children.isEmpty())
-            return "";
-
-        var symbolsText = symbols.values().stream()
-            .map(Symbol::toString)
-            .collect(Collectors.joining("\n"));
-
-        var scopesText = children.stream()
-            .filter(scope -> !(scope instanceof Symbol))
-            .map(Scope::toString)
-            .collect(Collectors.joining(""))
-            .indent(4);
-
-        var text = "";
-
-        if (!symbols.isEmpty())
-            text += symbolsText + "\n";
-
-        if (!scopesText.isBlank())
-            text += "{\n" + scopesText + "}\n";
-
-        return text;
+        return Scope.toString(symbols, children);
     }
 }

@@ -4,7 +4,10 @@ import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.constants.ConstantsV2;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
+import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
+
+import java.util.List;
 
 public class SymbolTableBuilderV2 {
 
@@ -23,6 +26,8 @@ public class SymbolTableBuilderV2 {
     }
 
     private MethodSymbol getMainMethodSymbol(GlobalScope globalScope) {
-        return MethodSymbol.newGlobalMethod(ConstantsV2.MAIN_METHOD_SIGNATURE.getMethodName(), BootstrapTypeSymbols.getInstance().getVoidClass(), globalScope);
+        var voidClass = BootstrapTypeSymbols.getInstance().getVoidClass();
+
+        return MethodSymbol.newGlobalMethod(ConstantsV2.MAIN_METHOD_SIGNATURE.getMethodName(), voidClass, globalScope, List.of());
     }
 }

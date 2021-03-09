@@ -1,6 +1,5 @@
 package net.nlacombe.prophecy.builtintypes;
 
-import net.nlacombe.prophecy.symboltable.domain.scope.LocalScope;
 import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
@@ -14,8 +13,8 @@ public class BootstrapTypeSymbols {
 
     private final ClassSymbol voidClass;
     private final ClassSymbol objectClass;
-    private final ClassSymbol stringClass;
     private final ClassSymbol uInt8Class;
+    private final ClassSymbol stringClass;
     private final MethodSymbol systemPrintlnUInt8;
     private final MethodSymbol systemPrintlnString;
 
@@ -40,17 +39,15 @@ public class BootstrapTypeSymbols {
     }
 
     private MethodSymbol getSystemPrintlnUInt8MethodSymbol(ClassSymbol voidClass, ClassSymbol uInt8Class) {
-        var methodSymbol = MethodSymbol.newGlobalMethod("println", voidClass, null);
-        methodSymbol.putParameter(new VariableSymbol("i", uInt8Class));
+        var parameters = List.of(new VariableSymbol("i", uInt8Class));
 
-        return methodSymbol;
+        return MethodSymbol.newGlobalMethod("println", voidClass, null, parameters);
     }
 
     private MethodSymbol getSystemPrintlnStringMethodSymbol(ClassSymbol voidClass, ClassSymbol stringClass) {
-        var methodSymbol = MethodSymbol.newGlobalMethod("println", voidClass, null);
-        methodSymbol.putParameter(new VariableSymbol("s", stringClass));
+        var parameters = List.of(new VariableSymbol("s", stringClass));
 
-        return methodSymbol;
+        return MethodSymbol.newGlobalMethod("println", voidClass, null, parameters);
     }
 
     public ClassSymbol getVoidClass() {
