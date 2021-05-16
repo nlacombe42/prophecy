@@ -1,5 +1,6 @@
 package net.nlacombe.prophecy.parser;
 
+import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyBaseVisitor;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyParser;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
@@ -11,6 +12,7 @@ import net.nlacombe.prophecy.ast.node.ProphecyStringLiteralAstNode;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.reporting.SourceCodeLocation;
+import net.nlacombe.prophecy.util.CollectionUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.apache.commons.collections4.ListUtils;
 
@@ -77,6 +79,19 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
     }
 
     @Override
+    public List<ProphecyAstNode> visitArrayLiteral(ProphecyParser.ArrayLiteralContext arrayLiteralContext) {
+        var sourceCodeLocation = getSourceCodeLocation(arrayLiteralContext);
+
+        var elementNodes = visitChildren(arrayLiteralContext);
+
+        validateArrayElementsAreExpressions(sourceCodeLocation, elementNodes);
+
+        var expressionElementsNodes = CollectionUtil.castToSpecificWarn(elementNodes, ProphecyExpressionAstNode.class);
+
+        return List.of(new ProphecyArrayLiteralAstNode(sourceCodeLocation, expressionElementsNodes));
+    }
+
+    @Override
     protected List<ProphecyAstNode> aggregateResult(List<ProphecyAstNode> aggregate, List<ProphecyAstNode> nextResult) {
         return ListUtils.union(aggregate, nextResult);
     }
@@ -86,13 +101,24 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
         return List.of();
     }
 
-    private void validateArgumentsAreExpressions(SourceCodeLocation sourceCodeLocation, List<ProphecyAstNode> argumentNodes) {
-        var nonExpressionArgumentNodes = argumentNodes.stream()
-            .filter(argumentNode -> !(argumentNode instanceof ProphecyExpressionAstNode))
-            .collect(Collectors.toList());
+    private void validateArrayElementsAreExpressions(SourceCodeLocation sourceCodeLocation, List<ProphecyAstNode> nodes) {
+        var nonExpressionNodes = getNonExpressionNodes(nodes);
 
-        if (!nonExpressionArgumentNodes.isEmpty())
-            throw new ProphecyCompilerException("Error: Call at " + sourceCodeLocation + " contains the following arguments which are not expressions: " + nonExpressionArgumentNodes);
+        if (!nonExpressionNodes.isEmpty())
+            throw new ProphecyCompilerException("Error: Array literal at " + sourceCodeLocation + " contains the following elements which are not expressions: " + nonExpressionNodes);
+    }
+
+    private void validateArgumentsAreExpressions(SourceCodeLocation sourceCodeLocation, List<ProphecyAstNode> nodes) {
+        var nonExpressionNodes = getNonExpressionNodes(nodes);
+
+        if (!nonExpressionNodes.isEmpty())
+            throw new ProphecyCompilerException("Error: Call at " + sourceCodeLocation + " contains the following arguments which are not expressions: " + nonExpressionNodes);
+    }
+
+    private List<ProphecyAstNode> getNonExpressionNodes(List<ProphecyAstNode> nodes) {
+        return nodes.stream()
+            .filter(node -> !(node instanceof ProphecyExpressionAstNode))
+            .collect(Collectors.toList());
     }
 
     private SourceCodeLocation getSourceCodeLocation(ParserRuleContext parserRuleContext) {

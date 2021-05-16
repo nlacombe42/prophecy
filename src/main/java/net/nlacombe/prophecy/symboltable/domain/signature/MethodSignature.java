@@ -4,6 +4,7 @@ import net.nlacombe.prophecy.symboltable.domain.Type;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class MethodSignature implements SymbolSignature {
@@ -12,6 +13,9 @@ public class MethodSignature implements SymbolSignature {
     private final List<Type> parameterTypes;
 
     public MethodSignature(String methodName, List<Type> parameterTypes) {
+        if (parameterTypes == null || parameterTypes.stream().anyMatch(Objects::isNull))
+            throw new IllegalArgumentException("parameterTypes: " + parameterTypes);
+
         this.methodName = methodName;
         this.parameterTypes = parameterTypes;
     }
