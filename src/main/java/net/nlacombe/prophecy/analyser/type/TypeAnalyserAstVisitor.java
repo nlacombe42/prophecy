@@ -1,14 +1,19 @@
 package net.nlacombe.prophecy.analyser.type;
 
-import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
-import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
-import net.nlacombe.prophecy.symboltable.domain.Type;
-import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.ast.ProphecyAstVisitor;
+import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
+import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
+import net.nlacombe.prophecy.symboltable.domain.Type;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
+import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
@@ -45,7 +50,37 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
     }
 
     @Override
+    protected Type visitArrayLiteralAstNode(ProphecyArrayLiteralAstNode node) {
+        visitChildren(node);
+
+        var voidClass = BootstrapTypeSymbols.getInstance().getVoidClass();
+        var voidTypeElements = node.getElements().stream()
+            .filter(element -> element.getEvaluatedType().equals(voidClass))
+            .collect(Collectors.toList());
+
+        if (!voidTypeElements.isEmpty()) {
+            voidTypeElements.forEach(voidTypeElement ->
+                buildMessageService.error(voidTypeElement.getDefinitionSourceCodeLocation(), "Array literal cannot contain elements of void type: " + voidTypeElement));
+
+            return null;
+        }
+
+        var arrayParameterTypeSubstitution = node.getElements().stream()
+            .map(ProphecyExpressionAstNode::getEvaluatedType)
+            .reduce(Type::getMostSpecificCommonType)
+            .orElseThrow();
+
+        var arrayClass = BootstrapTypeSymbols.getInstance().getArrayClass();
+        var substitutedArrayClass = arrayClass.substitute(Map.of(arrayClass.getParameterTypes().get(0), arrayParameterTypeSubstitution));
+
+        node.setArrayType(substitutedArrayClass);
+
+        return arrayClass;
+    }
+
+    @Override
     protected Type defaultForNonImplementedNodeTypes(ProphecyAstNode node) {
         return null;
     }
+
 }

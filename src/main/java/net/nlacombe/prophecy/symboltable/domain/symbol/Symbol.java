@@ -1,9 +1,12 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.symboltable.domain.NamedParameterType;
 import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
+
+import java.util.Map;
 
 public abstract class Symbol {
 
@@ -22,6 +25,8 @@ public abstract class Symbol {
     }
 
     abstract public SymbolSignature getSignature();
+
+    abstract public Symbol substitute(Map<NamedParameterType, Type> parameterTypeSubstitutions);
 
     public String getName() {
         return name;

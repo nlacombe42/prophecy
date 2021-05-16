@@ -1,5 +1,7 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
+import net.nlacombe.prophecy.exception.ProphecyCompilerException;
+import net.nlacombe.prophecy.symboltable.domain.NamedParameterType;
 import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
@@ -16,24 +18,76 @@ public class ClassSymbol extends Symbol implements Scope, Type {
     private final ClassSymbol superClass;
     private final Scope enclosingScope;
     private final Map<SymbolSignature, Symbol> members;
+    private final List<NamedParameterType> parameterTypes;
+    private final Map<NamedParameterType, Type> parameterTypeSubstitutions;
+    private final ClassSymbol unsubstitutedClass;
 
-    public ClassSymbol(String name, Scope enclosingScope, ClassSymbol superClass) {
+    protected ClassSymbol(
+        String name,
+        Scope enclosingScope,
+        ClassSymbol superClass,
+        List<NamedParameterType> parameterTypes,
+        Map<NamedParameterType, Type> parameterTypeSubstitutions,
+        ClassSymbol unsubstitutedClass
+    ) {
         super(name);
 
         this.superClass = superClass;
         this.enclosingScope = enclosingScope;
+        this.unsubstitutedClass = unsubstitutedClass;
+        this.parameterTypes = parameterTypes == null ? List.of() : parameterTypes;
+        this.parameterTypeSubstitutions = parameterTypeSubstitutions == null ? Map.of() : parameterTypeSubstitutions;
 
         members = new LinkedHashMap<>();
+
+        validateParameterTypeSubstitutions(parameterTypeSubstitutions);
+        validateUnsubstituredClass(parameterTypeSubstitutions, unsubstitutedClass);
     }
 
-    public boolean isInstanceOf(ClassSymbol classSymbol) {
+    private void validateUnsubstituredClass(Map<NamedParameterType, Type> parameterTypeSubstitutions, ClassSymbol unsubstitutedClass) {
+        if (!parameterTypeSubstitutions.isEmpty() && unsubstitutedClass == null)
+            throw new ProphecyCompilerException("must pass unsubstitutedClass when creating a class with substitution");
+
+        if (parameterTypeSubstitutions.isEmpty() && unsubstitutedClass != null)
+            throw new ProphecyCompilerException("must not pass unsubstitutedClass when creating a class without substitution");
+    }
+
+    public static ClassSymbol newFromClassDefinition(String name, ClassSymbol superClass, Scope enclosingScope, List<NamedParameterType> parameterTypes) {
+        return new ClassSymbol(name, enclosingScope, superClass, parameterTypes, Map.of(), null);
+    }
+
+    public static ClassSymbol newFromClassDefinition(String name, ClassSymbol superClass, Scope enclosingScope) {
+        return newFromClassDefinition(name, superClass, enclosingScope, List.of());
+    }
+
+    @Override
+    public ClassSymbol substitute(Map<NamedParameterType, Type> parameterTypeSubstitutions) {
+        var classSymbol = new ClassSymbol(getName(), getEnclosingScope(), getSuperClass(), getParameterTypes(), parameterTypeSubstitutions, this);
+
+        members.forEach((symbolSignature, symbol) -> classSymbol.define(symbol.substitute(parameterTypeSubstitutions)));
+
+        return classSymbol;
+    }
+
+    public boolean isSameOrSubclass(ClassSymbol classSymbol) {
         if (equals(classSymbol))
             return true;
 
         if (superClass == null)
             return false;
 
-        return superClass.isInstanceOf(classSymbol);
+        return superClass.isSameOrSubclass(classSymbol);
+    }
+
+    public boolean isSameOrUnsubstitutedIsSameAs(ClassSymbol classSymbol) {
+        return equals(classSymbol) || classSymbol.getUnsubstitutedClass() != null && classSymbol.getUnsubstitutedClass().equals(classSymbol);
+    }
+
+    public ClassSymbol getUnsubstitutedClass() {
+        if (parameterTypeSubstitutions.isEmpty())
+            return this;
+
+        return unsubstitutedClass;
     }
 
     @Override
@@ -57,7 +111,7 @@ public class ClassSymbol extends Symbol implements Scope, Type {
         if (!(type instanceof ClassSymbol))
             return false;
 
-        return isInstanceOf((ClassSymbol) type);
+        return isSameOrSubclass((ClassSymbol) type);
     }
 
     @Override
@@ -94,12 +148,40 @@ public class ClassSymbol extends Symbol implements Scope, Type {
 
     @Override
     public String toString() {
-        var superClassText = superClass == null ? "" : " extends " + superClass.getName();
+        var superClassText = superClass == null ? "" : "extends " + superClass.getName();
+        var parameterTypesOrSubstitutionWitBrackets = parameterTypes.isEmpty() ? "" : "<" + getParameterTypesOrSubstitutionListText()  + ">";
 
-        return "class " + getName() + superClassText + " " + Scope.toString(Map.of(), List.of());
+        return "class " + getName() + parameterTypesOrSubstitutionWitBrackets + " " + superClassText + " " + Scope.toString(Map.of(), List.of());
+    }
+
+    private String getParameterTypesOrSubstitutionListText() {
+        return parameterTypes.stream()
+            .map(parameterType -> parameterType.substitute(parameterTypeSubstitutions))
+            .map(Type::getName)
+            .collect(Collectors.joining(","));
     }
 
     public ClassSymbol getSuperClass() {
         return superClass;
+    }
+
+    public List<NamedParameterType> getParameterTypes() {
+        return parameterTypes;
+    }
+
+    private void validateParameterTypeSubstitutions(Map<NamedParameterType, Type> parameterTypeSubstitutions) {
+        if (parameterTypeSubstitutions.isEmpty())
+            return;
+
+        var invalidSubstitutionException = new IllegalArgumentException("there must be a 1 to 1 mapping of named parameter type to their substitution");
+
+        if (getParameterTypes().size() != parameterTypeSubstitutions.size())
+            throw invalidSubstitutionException;
+
+        var missingSubstitutions = getParameterTypes().stream()
+            .anyMatch(namedParameterType -> !parameterTypeSubstitutions.containsKey(namedParameterType));
+
+        if (missingSubstitutions)
+            throw invalidSubstitutionException;
     }
 }

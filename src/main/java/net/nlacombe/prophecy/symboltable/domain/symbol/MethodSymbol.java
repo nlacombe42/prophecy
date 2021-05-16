@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy.symboltable.domain.symbol;
 
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
+import net.nlacombe.prophecy.symboltable.domain.NamedParameterType;
 import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
@@ -8,23 +9,30 @@ import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.LocalScope;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
+import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class MethodSymbol extends Symbol implements Scope {
 
     private final boolean isStatic;
-    private final LinkedHashMap<SymbolSignature, Symbol> parameters;
+    private final LinkedHashMap<SymbolSignature, VariableSymbol> parameters;
     private final LocalScope methodBodyScope;
     private final ClassSymbol parentClass;
     private final GlobalScope globalScope;
 
-    private MethodSymbol(String methodName, Type returnType, ClassSymbol parentClass, GlobalScope globalScope,
-                         boolean isStatic, List<VariableSymbol> parameters) {
-
+    private MethodSymbol(
+        String methodName,
+        Type returnType,
+        ClassSymbol parentClass,
+        GlobalScope globalScope,
+        boolean isStatic,
+        List<VariableSymbol> parameters
+    ) {
         super(methodName, returnType);
 
         if (parentClass != null && globalScope != null)
@@ -48,6 +56,16 @@ public class MethodSymbol extends Symbol implements Scope {
     public static MethodSymbol newGlobalMethod(String methodName, Type returnType, GlobalScope globalScope,
                                                List<VariableSymbol> parameters) {
         return new MethodSymbol(methodName, returnType, null, globalScope, true, parameters);
+    }
+
+    @Override
+    public MethodSymbol substitute(Map<NamedParameterType, Type> parameterTypeSubstitutions) {
+        var substituteReturnType = Type.getSubstituteOrOriginal(getReturnType(), parameterTypeSubstitutions);
+        var substituteParameters = getParameters().stream()
+            .map(parameter -> parameter.substitute(parameterTypeSubstitutions))
+            .collect(Collectors.toList());
+
+        return new MethodSymbol(getMethodName(), substituteReturnType, getParentClass(), this.globalScope, isStatic(), substituteParameters);
     }
 
     @Override
@@ -105,7 +123,7 @@ public class MethodSymbol extends Symbol implements Scope {
         return "" + getReturnType().getName() + " " + getMethodName() + "(" + parametersText + ")" + scopeText;
     }
 
-    public List<Symbol> getParameters() {
+    public List<VariableSymbol> getParameters() {
         return new ArrayList<>(parameters.values());
     }
 
@@ -129,7 +147,7 @@ public class MethodSymbol extends Symbol implements Scope {
         return isStatic;
     }
 
-    private void addParameter(Symbol symbol) {
+    private void addParameter(VariableSymbol symbol) {
         var alreadyExistingParameter = parameters.get(symbol.getSignature());
 
         if (alreadyExistingParameter != null)

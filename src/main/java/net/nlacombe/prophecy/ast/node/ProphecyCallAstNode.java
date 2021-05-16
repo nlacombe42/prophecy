@@ -1,8 +1,9 @@
 package net.nlacombe.prophecy.ast.node;
 
+import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
-import net.nlacombe.prophecy.reporting.SourceCodeLocation;
+import net.nlacombe.prophecy.util.CollectionUtil;
 
 import java.util.List;
 import java.util.Objects;
@@ -39,7 +40,7 @@ public class ProphecyCallAstNode extends AbstractProphecyExpressionAstNode {
 
     @Override
     public List<ProphecyAstNode> getChildren() {
-        return arguments.stream().map(node -> (ProphecyAstNode)node).collect(Collectors.toList());
+        return CollectionUtil.castToGeneric(arguments, ProphecyAstNode.class);
     }
 
     public void setEvaluatedType(Type evaluatedType) {

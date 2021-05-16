@@ -38,6 +38,7 @@ expression
 literal
     : INTEGER_LITERAL #integerLiteral
     | STRING_LITERAL #stringLiteral
+    | '[' expressionList ']' #arrayLiteral
     ;
 
 INTEGER_LITERAL: [0-9]+;

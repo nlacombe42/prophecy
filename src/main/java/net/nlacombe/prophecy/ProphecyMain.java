@@ -15,7 +15,7 @@ public class ProphecyMain {
     private static final Logger logger = LoggerFactory.getLogger(ProphecyMain.class);
 
     public static void main(String[] args) {
-        var inputFilePath = Path.of("input.txt");
+        var inputFilePath = Path.of("/home/nlacombe/prog/personal/prophecy/input.txt");
 
         try (
             var fileInputStream = new FileInputStream(inputFilePath.toFile());
