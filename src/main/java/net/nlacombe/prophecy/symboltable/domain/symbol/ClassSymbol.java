@@ -12,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ClassSymbol extends Symbol implements Scope, Type {
 
@@ -41,15 +42,7 @@ public class ClassSymbol extends Symbol implements Scope, Type {
         members = new LinkedHashMap<>();
 
         validateParameterTypeSubstitutions(parameterTypeSubstitutions);
-        validateUnsubstituredClass(parameterTypeSubstitutions, unsubstitutedClass);
-    }
-
-    private void validateUnsubstituredClass(Map<NamedParameterType, Type> parameterTypeSubstitutions, ClassSymbol unsubstitutedClass) {
-        if (!parameterTypeSubstitutions.isEmpty() && unsubstitutedClass == null)
-            throw new ProphecyCompilerException("must pass unsubstitutedClass when creating a class with substitution");
-
-        if (parameterTypeSubstitutions.isEmpty() && unsubstitutedClass != null)
-            throw new ProphecyCompilerException("must not pass unsubstitutedClass when creating a class without substitution");
+        validateUnsubstitutedClass(parameterTypeSubstitutions, unsubstitutedClass);
     }
 
     public static ClassSymbol newFromClassDefinition(String name, ClassSymbol superClass, Scope enclosingScope, List<NamedParameterType> parameterTypes) {
@@ -154,11 +147,10 @@ public class ClassSymbol extends Symbol implements Scope, Type {
         return "class " + getName() + parameterTypesOrSubstitutionWitBrackets + " " + superClassText + " " + Scope.toString(Map.of(), List.of());
     }
 
-    private String getParameterTypesOrSubstitutionListText() {
+    public List<Type> getSubstitutedParameterTypes() {
         return parameterTypes.stream()
             .map(parameterType -> parameterType.substitute(parameterTypeSubstitutions))
-            .map(Type::getName)
-            .collect(Collectors.joining(","));
+            .collect(Collectors.toList());
     }
 
     public ClassSymbol getSuperClass() {
@@ -167,6 +159,12 @@ public class ClassSymbol extends Symbol implements Scope, Type {
 
     public List<NamedParameterType> getParameterTypes() {
         return parameterTypes;
+    }
+
+    private String getParameterTypesOrSubstitutionListText() {
+        return getSubstitutedParameterTypes().stream()
+            .map(Type::getName)
+            .collect(Collectors.joining(","));
     }
 
     private void validateParameterTypeSubstitutions(Map<NamedParameterType, Type> parameterTypeSubstitutions) {
@@ -183,5 +181,13 @@ public class ClassSymbol extends Symbol implements Scope, Type {
 
         if (missingSubstitutions)
             throw invalidSubstitutionException;
+    }
+
+    private void validateUnsubstitutedClass(Map<NamedParameterType, Type> parameterTypeSubstitutions, ClassSymbol unsubstitutedClass) {
+        if (!parameterTypeSubstitutions.isEmpty() && unsubstitutedClass == null)
+            throw new ProphecyCompilerException("must pass unsubstitutedClass when creating a class with substitution");
+
+        if (parameterTypeSubstitutions.isEmpty() && unsubstitutedClass != null)
+            throw new ProphecyCompilerException("must not pass unsubstitutedClass when creating a class without substitution");
     }
 }

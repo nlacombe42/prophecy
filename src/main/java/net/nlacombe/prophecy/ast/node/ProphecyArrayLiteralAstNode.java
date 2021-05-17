@@ -35,6 +35,10 @@ public class ProphecyArrayLiteralAstNode extends AbstractProphecyExpressionAstNo
         this.evaluatedType = arrayType;
     }
 
+    public ClassSymbol getArrayType() {
+        return (ClassSymbol) this.evaluatedType;
+    }
+
     @Override
     public String toString() {
         var elementsText = getElements().stream()

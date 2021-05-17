@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy.parser;
 
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyBaseVisitor;
 import net.nlacombe.prophecy.parser.antlr4.ProphecyParser;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
@@ -48,6 +49,16 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
             .collect(Collectors.toList());
 
         return List.of(new ProphecyCallAstNode(sourceCodeLocation, callContext.methodName.getText(), expressionArgumentNodes));
+    }
+
+    @Override
+    public List<ProphecyAstNode> visitExpressionSelectionCall(ProphecyParser.ExpressionSelectionCallContext expressionSelectionCallContext) {
+        var sourceCodeLocation = getSourceCodeLocation(expressionSelectionCallContext);
+        var expressionChildren = visitChildren(expressionSelectionCallContext.expression());
+        var expression = (ProphecyExpressionAstNode) expressionChildren.get(0);
+        var call = (ProphecyCallAstNode) visitCall(expressionSelectionCallContext.call()).get(0);
+
+        return List.of(new ProphecyCallSelectionExpressionAstNode(sourceCodeLocation, expression, call));
     }
 
     @Override

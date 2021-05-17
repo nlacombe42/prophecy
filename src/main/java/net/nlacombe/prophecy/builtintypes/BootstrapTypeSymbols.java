@@ -24,7 +24,7 @@ public class BootstrapTypeSymbols {
         objectClass = ClassSymbol.newFromClassDefinition("Object", null, null);
         voidClass = ClassSymbol.newFromClassDefinition("Void", objectClass, null);
         uInt8Class = ClassSymbol.newFromClassDefinition("UInt8", objectClass, null);
-        arrayClass = getArrayClassSymbol(objectClass);
+        arrayClass = getArrayClassSymbol(objectClass, uInt8Class);
         stringClass = ClassSymbol.newFromClassDefinition("String", objectClass, null);
         systemPrintlnUInt8 = getSystemPrintlnUInt8MethodSymbol(voidClass, uInt8Class);
         systemPrintlnString = getSystemPrintlnStringMethodSymbol(voidClass, stringClass);
@@ -41,11 +41,12 @@ public class BootstrapTypeSymbols {
         return List.of(voidClass, objectClass, uInt8Class, arrayClass, stringClass, systemPrintlnUInt8, systemPrintlnString);
     }
 
-    private ClassSymbol getArrayClassSymbol(ClassSymbol objectClass) {
+    private ClassSymbol getArrayClassSymbol(ClassSymbol objectClass, ClassSymbol uInt8Class) {
         var parameterType = new NamedParameterType("T");
 
         var arrayClass = ClassSymbol.newFromClassDefinition("Array", objectClass, null, List.of(parameterType));
-        arrayClass.define(MethodSymbol.newClassMethod("get", parameterType, arrayClass, false, List.of()));
+        var indexParameter = new VariableSymbol("index", uInt8Class);
+        arrayClass.define(MethodSymbol.newClassMethod("get", parameterType, arrayClass, false, List.of(indexParameter)));
 
         return arrayClass;
     }

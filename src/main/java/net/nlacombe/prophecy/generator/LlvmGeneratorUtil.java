@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy.generator;
 
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
+import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
@@ -13,12 +14,15 @@ import java.util.stream.Collectors;
 
 public class LlvmGeneratorUtil {
 
+    private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
+    private static final ProphecySpecialTypeSymbols specialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
+
     public static String getLlvmType(Type type) {
-        if (BootstrapTypeSymbols.getInstance().getVoidClass().equals(type))
+        if (bootstrapTypeSymbols.getVoidClass().equals(type))
             return "void";
-        if (BootstrapTypeSymbols.getInstance().getUInt8Class().equals(type))
+        if (bootstrapTypeSymbols.getUInt8Class().equals(type))
             return "i8";
-        if (BootstrapTypeSymbols.getInstance().getStringClass().equals(type))
+        if (bootstrapTypeSymbols.getStringClass().equals(type) || specialTypeSymbols.getUInt8Array().equals(type))
             return "i8*";
         else
             throw new ProphecyCompilerException("Unimplemented llvm type for prophecy type: " + type);
@@ -30,19 +34,28 @@ public class LlvmGeneratorUtil {
 
     public static String toLlvmStringLiteral(String stringValue) {
         return stringValue.chars()
-            .mapToObj(codepoint -> {
-                if (isPrintableAscii(codepoint) && !(codepoint == '\\' || codepoint == '"'))
-                    return "" + (char) codepoint;
-                else {
-                    var javaHexString = Integer.toHexString(codepoint);
-
-                    if (javaHexString.length() < 2)
-                        javaHexString = "0" + javaHexString;
-
-                    return "\\" + javaHexString;
-                }
-            })
+            .mapToObj(codepoint ->
+                isPrintableAscii(codepoint) && !(codepoint == '\\' || codepoint == '"') ?
+                    "" + (char) codepoint
+                    :
+                    toLlvmStringLiteralHexSequence(codepoint)
+            )
             .collect(Collectors.joining());
+    }
+
+    public static String toLlvmStringLiteral(List<Integer> uInt8ArrayValues) {
+        return uInt8ArrayValues.stream()
+            .map(LlvmGeneratorUtil::toLlvmStringLiteralHexSequence)
+            .collect(Collectors.joining());
+    }
+
+    private static String toLlvmStringLiteralHexSequence(int integer) {
+        var javaHexString = Integer.toHexString(integer);
+
+        if (javaHexString.length() < 2)
+            javaHexString = "0" + javaHexString;
+
+        return "\\" + javaHexString;
     }
 
     private static boolean isPrintableAscii(int codepoint) {

@@ -3,6 +3,7 @@ package net.nlacombe.prophecy.ast;
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 import net.nlacombe.prophecy.util.AbstractVisitor;
 
@@ -41,6 +42,7 @@ public abstract class ProphecyAstVisitor<ResultType> extends AbstractVisitor<Pro
         handlersMap.put(ProphecyCallAstNode.class, node -> visitCallAstNode((ProphecyCallAstNode) node));
         handlersMap.put(ProphecyFileAstNode.class, node -> visitFileAstNode((ProphecyFileAstNode) node));
         handlersMap.put(ProphecyArrayLiteralAstNode.class, node -> visitArrayLiteralAstNode((ProphecyArrayLiteralAstNode) node));
+        handlersMap.put(ProphecyCallSelectionExpressionAstNode.class, node -> visitCallSelectionExpressionAstNode((ProphecyCallSelectionExpressionAstNode) node));
 
         return handlersMap;
     }
@@ -57,6 +59,10 @@ public abstract class ProphecyAstVisitor<ResultType> extends AbstractVisitor<Pro
     }
 
     protected ResultType visitArrayLiteralAstNode(ProphecyArrayLiteralAstNode node) {
+        return visitChildren(node);
+    }
+
+    protected ResultType visitCallSelectionExpressionAstNode(ProphecyCallSelectionExpressionAstNode node) {
         return visitChildren(node);
     }
 }

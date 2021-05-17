@@ -49,6 +49,7 @@ public class LlvmGenerator {
 
                 try (var stringWriter = new StringWriter()) {
                     fileAstNode.getStatements().forEach(statementAstNode -> {
+                        stringWriter.write("; " + statementAstNode.toString() + "\n");
                         stringWriter.write("; start of statement\n");
                         V2AstLlvmGenerator.generate(stringWriter, llvmTemporaryNameGenerator, statementAstNode);
                         stringWriter.write("; end of statement\n\n");

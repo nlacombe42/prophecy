@@ -31,8 +31,9 @@ call: methodName=NON_TYPE_IDENTIFIER '(' arguments=expressionList? ')';
 expressionList: expression (', ' expression)*;
 
 expression
-    : literal
-    | call
+    : literal #expressionLiteral
+    | call #expressionCall
+    | expression '.' call #expressionSelectionCall
     ;
 
 literal

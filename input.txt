@@ -1,3 +1,5 @@
-println(1)
-println(2)
-println([1, 2, 3])
+println(42)
+println("text")
+println([11, 22, 33].get(0))
+println([11, 22, 33].get(1))
+println([11, 22, 33].get(2))

@@ -4,6 +4,7 @@ import net.nlacombe.prophecy.ast.ProphecyAstVisitor;
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
@@ -12,7 +13,6 @@ import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -45,6 +45,39 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         node.setMethodSymbol((MethodSymbol) methodCalled);
 
         node.setEvaluatedType(methodCalled.getType());
+
+        return methodCalled.getType();
+    }
+
+    @Override
+    protected Type visitCallSelectionExpressionAstNode(ProphecyCallSelectionExpressionAstNode node) {
+        visit(node.getSelectionExpression());
+
+        var selectionExpressionNode = node.getSelectionExpression();
+        var selectionExpressionClass = (ClassSymbol) selectionExpressionNode.getEvaluatedType();
+        var callNode = node.getCall();
+        var parameterTypes = callNode.getArguments().stream()
+            .map(ProphecyExpressionAstNode::getEvaluatedType)
+            .collect(Collectors.toList());
+        var methodSignature = new MethodSignature(callNode.getMethodName(), parameterTypes);
+        var methodCalled = selectionExpressionClass.resolve(methodSignature);
+
+        if (methodCalled == null) {
+            var sourceCodeLocation = node.getDefinitionSourceCodeLocation();
+
+            var message = "No method found on type \"$class\" that has this signature: $signature"
+                .replace("$class", selectionExpressionClass.getName())
+                .replace("$signature", methodSignature.toString());
+            buildMessageService.error(sourceCodeLocation, message);
+
+            return null;
+        }
+
+        var returnType = methodCalled.getType();
+
+        callNode.setMethodSymbol((MethodSymbol) methodCalled);
+        callNode.setEvaluatedType(returnType);
+        node.setEvaluatedType(returnType);
 
         return methodCalled.getType();
     }
