@@ -4,7 +4,9 @@ import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
+import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
@@ -145,36 +147,23 @@ public class AstLlvmGenerator {
     }
 
     private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyCallSelectionExpressionAstNode astNode) {
-        var uInt8Class = bootstrapTypeSymbols.getUInt8Class();
         var selectionExpression = astNode.getSelectionExpression();
+        var methodSymbol = astNode.getCall().getMethodSymbol();
+        var methodSignature = methodSymbol.getSignature();
 
-        validateUInt8ArrayGetMethodCall(astNode, uInt8Class, selectionExpression);
+        validateSelectionExpressionIsUInt8Array(selectionExpression);
 
-        var arrayPointerLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, selectionExpression);
-        var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, astNode.getCall().getArguments().get(0));
+        if (specialTypeSymbols.getUInt8ArrayGetMethodSignature().equals(methodSignature)) {
+            var arrayPointerLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, selectionExpression);
+            var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, astNode.getCall().getArguments().get(0));
 
-        try {
-            var llvmType = LlvmGeneratorUtil.getLlvmType(bootstrapTypeSymbols.getUInt8Class());
-            var indexOffsetName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-            var indexPointerName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            return UInt8ArrayLlvmGenerator.generateUInt8ArrayGet(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol, indexLlvmSymbol);
+        } else if(specialTypeSymbols.getUInt8ArraySizeMethodSignature().equals(methodSignature)) {
+            var arrayPointerLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, selectionExpression);
 
-            var llvmCode = """
-                $indexOffsetName = add i8 $indexName, 1 ; get value from UInt8 array start
-                $indexPointerName = getelementptr i8, i8* $arrayPointerName, i8 $indexOffsetName
-                $returnValueName = load i8, i8* $indexPointerName ; get value from UInt8 array end
-                """
-                .replace("$indexOffsetName", indexOffsetName)
-                .replace("$arrayPointerName", arrayPointerLlvmSymbol.getName())
-                .replace("$indexPointerName", indexPointerName)
-                .replace("$returnValueName", returnValueName)
-                .replace("$indexName", indexLlvmSymbol.getName());
-
-            writer.write(llvmCode);
-
-            return new LlvmSymbol(llvmType, returnValueName);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return UInt8ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol);
+        } else {
+            throw new ProphecyCompilerException("llvm generator has no implementation for this Array<UInt8> method: " + methodSignature);
         }
     }
 
@@ -216,19 +205,17 @@ public class AstLlvmGenerator {
         }
     }
 
-    private static void validateUInt8ArrayGetMethodCall(ProphecyCallSelectionExpressionAstNode astNode, ClassSymbol uInt8Class, ProphecyExpressionAstNode selectionExpression) {
-        var exception = new ProphecyCompilerException("the llvm generator only support selection expression call for the get method of an UInt8 array");
+    private static void validateSelectionExpressionIsUInt8Array(ProphecyExpressionAstNode selectionExpression) {
+        var uInt8Class = bootstrapTypeSymbols.getUInt8Class();
+        var notUInt8ArrayException = new ProphecyCompilerException("only selection expression calls for Array<UInt8> are supported by the llvm generator");
 
         if (!(selectionExpression instanceof ProphecyArrayLiteralAstNode))
-            throw exception;
+            throw notUInt8ArrayException;
 
         var arrayType = ((ProphecyArrayLiteralAstNode) selectionExpression).getArrayType();
 
         if (!uInt8Class.equals(arrayType.getSubstitutedParameterTypes().get(0)))
-            throw exception;
-
-        if (!specialTypeSymbols.getUInt8ArrayGetMethodSignature().equals(astNode.getCall().getMethodSymbol().getSignature()))
-            throw exception;
+            throw notUInt8ArrayException;
     }
 
     private static List<Integer> getArrayUInt8Elements(ProphecyArrayLiteralAstNode astNode) {

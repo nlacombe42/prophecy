@@ -14,6 +14,7 @@ import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
@@ -31,6 +32,11 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         var parameterTypes = node.getArguments().stream()
             .map(ProphecyExpressionAstNode::getEvaluatedType)
             .collect(Collectors.toList());
+
+        if (parameterTypes.stream().anyMatch(Objects::isNull)) {
+            return null;
+        }
+
         var methodSignature = new MethodSignature(node.getMethodName(), parameterTypes);
         var methodCalled = node.getEnclosingScope().resolve(methodSignature);
 
@@ -54,6 +60,10 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         visit(node.getSelectionExpression());
 
         var selectionExpressionNode = node.getSelectionExpression();
+
+        if (selectionExpressionNode.getEvaluatedType() == null)
+            return null;
+
         var selectionExpressionClass = (ClassSymbol) selectionExpressionNode.getEvaluatedType();
         var callNode = node.getCall();
         var parameterTypes = callNode.getArguments().stream()
@@ -94,6 +104,12 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         if (!voidTypeElements.isEmpty()) {
             voidTypeElements.forEach(voidTypeElement ->
                 buildMessageService.error(voidTypeElement.getDefinitionSourceCodeLocation(), "Array literal cannot contain elements of void type: " + voidTypeElement));
+
+            return null;
+        }
+
+        if (node.getElements().isEmpty()) {
+            buildMessageService.error(node.getDefinitionSourceCodeLocation(), "cannot declare empty array literal (because type inference not possible in this case)");
 
             return null;
         }

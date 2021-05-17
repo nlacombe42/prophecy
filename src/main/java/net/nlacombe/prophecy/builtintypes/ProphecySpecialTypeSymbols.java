@@ -2,8 +2,6 @@ package net.nlacombe.prophecy.builtintypes;
 
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
-import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
-import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
 import java.util.List;
 import java.util.Map;
@@ -40,6 +38,12 @@ public class ProphecySpecialTypeSymbols {
 
     public MethodSignature getUInt8ArrayGetMethodSignature() {
         var methodSymbol = uInt8Array.resolve(new MethodSignature("get", List.of(bootstrapTypeSymbols.getUInt8Class())));
+
+        return (MethodSignature) methodSymbol.getSignature();
+    }
+
+    public MethodSignature getUInt8ArraySizeMethodSignature() {
+        var methodSymbol = uInt8Array.resolve(new MethodSignature("size", List.of()));
 
         return (MethodSignature) methodSymbol.getSignature();
     }

@@ -45,8 +45,11 @@ public class BootstrapTypeSymbols {
         var parameterType = new NamedParameterType("T");
 
         var arrayClass = ClassSymbol.newFromClassDefinition("Array", objectClass, null, List.of(parameterType));
+
         var indexParameter = new VariableSymbol("index", uInt8Class);
         arrayClass.define(MethodSymbol.newClassMethod("get", parameterType, arrayClass, false, List.of(indexParameter)));
+
+        arrayClass.define(MethodSymbol.newClassMethod("size", parameterType, arrayClass, false, List.of()));
 
         return arrayClass;
     }

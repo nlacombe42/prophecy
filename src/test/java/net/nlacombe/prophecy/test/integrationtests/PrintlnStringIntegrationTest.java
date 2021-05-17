@@ -7,16 +7,11 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-public class PrintlnStringTest {
+public class PrintlnStringIntegrationTest {
 
     @Test
     public void println_string_one_line() {
         test_println_string_without_escape("one line message.");
-    }
-
-    @Test
-    public void println_string_multi_line() {
-        test_println_string_without_escape("multi\nline\nmessage.");
     }
 
     @Test
