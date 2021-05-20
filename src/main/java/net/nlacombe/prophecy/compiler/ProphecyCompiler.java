@@ -34,7 +34,7 @@ public class ProphecyCompiler {
             var buildMessageService = new BuildMessageService();
 
             var astRoot = new ProphecyAstBuilder(inputStream, inputFilePath, buildMessageService).parse();
-            var globalScope = new SymbolTableBuilderV2().buildSymbolTable(astRoot);
+            var globalScope = new SymbolTableBuilderV2().buildSymbolTable(astRoot, buildMessageService);
             new TypeAnalyserV2().evaluateTypesAndResolveCalls(astRoot, buildMessageService);
 
             if (buildMessageService.hasErrorBuildMessage())

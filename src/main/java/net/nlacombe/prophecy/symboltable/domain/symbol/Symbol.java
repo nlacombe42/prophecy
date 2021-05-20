@@ -57,11 +57,8 @@ public abstract class Symbol {
     }
 
     public String toString() {
-        String s = "";
-
-        if (type != null)
-            return '<' + s + getName() + ":" + type.getName() + '>';
-
-        return s + getName();
+        return "$type $name"
+            .replace("$type", getType() == null ? "" : getType().getNameWithParameterTypesOrSubstitution())
+            .replace("$name", getName());
     }
 }

@@ -8,6 +8,8 @@ public interface Type {
 
     String getName();
 
+    String getNameWithParameterTypesOrSubstitution();
+
     boolean canAssignTo(Type type);
 
     Type substitute(Map<NamedParameterType, Type> parameterTypeSubstitutions);

@@ -45,7 +45,7 @@ public class MethodSymbol extends Symbol implements Scope {
         this.parameters = new LinkedHashMap<>();
         parameters.forEach(this::addParameter);
 
-        methodBodyScope = new LocalScope(null);
+        methodBodyScope = new LocalScope(this);
     }
 
     public static MethodSymbol newClassMethod(String methodName, Type returnType, ClassSymbol parentClass,
@@ -99,6 +99,10 @@ public class MethodSymbol extends Symbol implements Scope {
     @Override
     public Scope getEnclosingScope() {
         return getParentScope();
+    }
+
+    public LocalScope getMethodBodyScope() {
+        return methodBodyScope;
     }
 
     public ClassSymbol getParentClass() {

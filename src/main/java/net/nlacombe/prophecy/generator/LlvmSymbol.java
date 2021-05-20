@@ -9,6 +9,11 @@ class LlvmSymbol {
         this.name = name;
     }
 
+    @Override
+    public String toString() {
+        return type + " " + name;
+    }
+
     public String getType() {
         return type;
     }

@@ -12,7 +12,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ClassSymbol extends Symbol implements Scope, Type {
 
@@ -142,9 +141,15 @@ public class ClassSymbol extends Symbol implements Scope, Type {
     @Override
     public String toString() {
         var superClassText = superClass == null ? "" : "extends " + superClass.getName();
-        var parameterTypesOrSubstitutionWitBrackets = parameterTypes.isEmpty() ? "" : "<" + getParameterTypesOrSubstitutionListText()  + ">";
 
-        return "class " + getName() + parameterTypesOrSubstitutionWitBrackets + " " + superClassText + " " + Scope.toString(Map.of(), List.of());
+        return "class " + getNameWithParameterTypesOrSubstitution() + " " + superClassText + " " + Scope.toString(Map.of(), List.of());
+    }
+
+    @Override
+    public String getNameWithParameterTypesOrSubstitution() {
+        var parameterTypesOrSubstitutionWitBrackets = parameterTypes.isEmpty() ? "" : "<" + getParameterTypesOrSubstitutionListText() + ">";
+
+        return getName() + parameterTypesOrSubstitutionWitBrackets;
     }
 
     public List<Type> getSubstitutedParameterTypes() {

@@ -24,11 +24,14 @@ file: statement*;
 
 statement
     : call NEWLINE
+    | variableDeclaration NEWLINE
     ;
 
 call: methodName=NON_TYPE_IDENTIFIER '(' arguments=expressionList? ')';
 
 expressionList: expression (', ' expression)*;
+
+variableDeclaration: 'val' ' ' variableName=NON_TYPE_IDENTIFIER ' = ' initializer=expression;
 
 expression
     : literal #expressionLiteral

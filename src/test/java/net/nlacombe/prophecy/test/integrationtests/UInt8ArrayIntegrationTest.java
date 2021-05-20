@@ -41,6 +41,6 @@ public class UInt8ArrayIntegrationTest {
             println([].size())
             """;
 
-        assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, "3\n"));
+        assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
     }
 }

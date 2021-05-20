@@ -4,3 +4,7 @@ println([11, 22, 33].get(0))
 println([11, 22, 33].get(1))
 println([11, 22, 33].get(2))
 println([11, 22, 33].size())
+val datVar1 = 42
+val datVar2 = "val datvar"
+val iArray = [1, 42]
+val agi = [1].get(0)

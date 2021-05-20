@@ -6,6 +6,7 @@ import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyVariableDeclarationAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.symboltable.domain.Type;
@@ -18,6 +19,9 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
+
+    private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
+    private static final ClassSymbol voidClass = bootstrapTypeSymbols.getVoidClass();
 
     private final BuildMessageService buildMessageService;
 
@@ -96,7 +100,6 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
     protected Type visitArrayLiteralAstNode(ProphecyArrayLiteralAstNode node) {
         visitChildren(node);
 
-        var voidClass = BootstrapTypeSymbols.getInstance().getVoidClass();
         var voidTypeElements = node.getElements().stream()
             .filter(element -> element.getEvaluatedType().equals(voidClass))
             .collect(Collectors.toList());
@@ -119,12 +122,36 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
             .reduce(Type::getMostSpecificCommonType)
             .orElseThrow();
 
-        var arrayClass = BootstrapTypeSymbols.getInstance().getArrayClass();
+        var arrayClass = bootstrapTypeSymbols.getArrayClass();
         var substitutedArrayClass = arrayClass.substitute(Map.of(arrayClass.getParameterTypes().get(0), arrayParameterTypeSubstitution));
 
         node.setArrayType(substitutedArrayClass);
 
         return arrayClass;
+    }
+
+    @Override
+    protected Type visitVariableDeclarationAstNode(ProphecyVariableDeclarationAstNode node) {
+        visitChildren(node);
+
+        var initializerNode = node.getInitializer();
+        var initializerType = initializerNode.getEvaluatedType();
+
+        if (initializerType == null)
+            return null;
+
+        if (initializerType.equals(voidClass)) {
+            buildMessageService.error(initializerNode.getDefinitionSourceCodeLocation(), "'val' variable declaration cannot have an initializer of type Void");
+
+            return null;
+        }
+
+        if (node.getVariableSymbol() == null)
+            return null;
+
+        node.getVariableSymbol().setType(initializerType);
+
+        return null;
     }
 
     @Override

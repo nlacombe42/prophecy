@@ -1,16 +1,17 @@
 package net.nlacombe.prophecy.parser;
 
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
-import net.nlacombe.prophecy.parser.antlr4.ProphecyBaseVisitor;
-import net.nlacombe.prophecy.parser.antlr4.ProphecyParser;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIntegerLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyStringLiteralAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyVariableDeclarationAstNode;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
+import net.nlacombe.prophecy.parser.antlr4.ProphecyBaseVisitor;
+import net.nlacombe.prophecy.parser.antlr4.ProphecyParser;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 import net.nlacombe.prophecy.util.CollectionUtil;
@@ -103,6 +104,16 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
     }
 
     @Override
+    public List<ProphecyAstNode> visitVariableDeclaration(ProphecyParser.VariableDeclarationContext variableDeclarationContext) {
+        var sourceCodeLocation = getSourceCodeLocation(variableDeclarationContext);
+
+        var initializerNode = visit(variableDeclarationContext.initializer);
+        var initializerExpression = getOneExpressionNode(initializerNode);
+
+        return List.of(new ProphecyVariableDeclarationAstNode(sourceCodeLocation, variableDeclarationContext.variableName.getText(), initializerExpression));
+    }
+
+    @Override
     protected List<ProphecyAstNode> aggregateResult(List<ProphecyAstNode> aggregate, List<ProphecyAstNode> nextResult) {
         return ListUtils.union(aggregate, nextResult);
     }
@@ -110,6 +121,13 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
     @Override
     protected List<ProphecyAstNode> defaultResult() {
         return List.of();
+    }
+
+    private ProphecyExpressionAstNode getOneExpressionNode(List<ProphecyAstNode> nodes) {
+        if (nodes.size() != 1 || !(nodes.get(0) instanceof ProphecyExpressionAstNode))
+            throw new ProphecyCompilerException("expected exactly 1 expression node: " + nodes);
+
+        return (ProphecyExpressionAstNode) nodes.get(0);
     }
 
     private void validateArrayElementsAreExpressions(SourceCodeLocation sourceCodeLocation, List<ProphecyAstNode> nodes) {

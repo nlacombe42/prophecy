@@ -32,6 +32,10 @@ public class LlvmGeneratorUtil {
         return "@" + getLlvmNameFromNameParts(getFunctionNameParts(methodSymbol));
     }
 
+    public static String getLlvmVariableName(String variableName) {
+        return "%" + variableName;
+    }
+
     public static String toLlvmStringLiteral(String stringValue) {
         return stringValue.chars()
             .mapToObj(codepoint ->
@@ -88,5 +92,4 @@ public class LlvmGeneratorUtil {
     private static String getLlvmNamePartSeparator() {
         return "$";
     }
-
 }

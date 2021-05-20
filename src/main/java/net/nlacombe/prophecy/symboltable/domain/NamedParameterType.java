@@ -28,4 +28,9 @@ public class NamedParameterType implements Type {
     public String getName() {
         return name;
     }
+
+    @Override
+    public String getNameWithParameterTypesOrSubstitution() {
+        return getName();
+    }
 }

@@ -12,8 +12,8 @@ public class BootstrapTypeSymbols {
 
     private static BootstrapTypeSymbols instance;
 
-    private final ClassSymbol voidClass;
     private final ClassSymbol objectClass;
+    private final ClassSymbol voidClass;
     private final ClassSymbol uInt8Class;
     private final ClassSymbol arrayClass;
     private final ClassSymbol stringClass;
@@ -38,7 +38,7 @@ public class BootstrapTypeSymbols {
     }
 
     public List<Symbol> getAll() {
-        return List.of(voidClass, objectClass, uInt8Class, arrayClass, stringClass, systemPrintlnUInt8, systemPrintlnString);
+        return List.of(objectClass, voidClass, uInt8Class, arrayClass, stringClass, systemPrintlnUInt8, systemPrintlnString);
     }
 
     private ClassSymbol getArrayClassSymbol(ClassSymbol objectClass, ClassSymbol uInt8Class) {
@@ -49,7 +49,7 @@ public class BootstrapTypeSymbols {
         var indexParameter = new VariableSymbol("index", uInt8Class);
         arrayClass.define(MethodSymbol.newClassMethod("get", parameterType, arrayClass, false, List.of(indexParameter)));
 
-        arrayClass.define(MethodSymbol.newClassMethod("size", parameterType, arrayClass, false, List.of()));
+        arrayClass.define(MethodSymbol.newClassMethod("size", uInt8Class, arrayClass, false, List.of()));
 
         return arrayClass;
     }
