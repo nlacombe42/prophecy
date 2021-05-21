@@ -27,17 +27,17 @@ statement
     | variableDeclaration NEWLINE
     ;
 
-call: methodName=NON_TYPE_IDENTIFIER '(' arguments=expressionList? ')';
+call: methodName=nonTypeIdentifier '(' arguments=expressionList? ')';
 
 expressionList: expression (', ' expression)*;
 
-variableDeclaration: 'val' ' ' variableName=NON_TYPE_IDENTIFIER ' = ' initializer=expression;
+variableDeclaration: 'val' ' ' variableName=nonTypeIdentifier ' = ' initializer=expression;
 
 expression
     : literal #literalExpression
     | call #callExpression
     | expression '.' call #selectionCallExpression
-    | identifier=NON_TYPE_IDENTIFIER #identifierExpression
+    | identifier=nonTypeIdentifier #identifierExpression
     ;
 
 literal
@@ -45,6 +45,8 @@ literal
     | STRING_LITERAL #stringLiteral
     | '[' expressionList ']' #arrayLiteral
     ;
+
+nonTypeIdentifier: (NON_TYPE_IDENTIFIER | 'val');
 
 INTEGER_LITERAL: [0-9]+;
 STRING_LITERAL: '"' ( '\\"' | ~('\r' | '\n') )*? '"';

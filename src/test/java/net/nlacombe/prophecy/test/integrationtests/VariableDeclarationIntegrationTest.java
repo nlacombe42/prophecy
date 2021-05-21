@@ -52,4 +52,14 @@ public class VariableDeclarationIntegrationTest {
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "");
     }
+
+    @Test
+    public void variable_with_keyword_name_works() {
+        var prophecyCode = """
+            val val = "yes! val!"
+            println(val)
+            """;
+
+        TestUtil.testProphecyProgramOutput(prophecyCode, "yes! val!\n");
+    }
 }

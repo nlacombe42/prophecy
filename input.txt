@@ -1,6 +1,2 @@
-val agi = [1].get(0)
-val v2 = agi
-println(v2)
-
-val arr = [1, 2, 3]
-println(arr.get(1))
+val val = "yes! val!"
+println(val)

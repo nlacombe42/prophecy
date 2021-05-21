@@ -162,8 +162,11 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
         var firstToken = parserRuleContext.start;
         var lastToken = parserRuleContext.stop;
 
-        return SourceCodeLocation.fromRange(filePath,
-            firstToken.getLine(), firstToken.getCharPositionInLine() + 1,
-            lastToken.getLine(), lastToken.getCharPositionInLine() + lastToken.getText().length());
+        if (lastToken == null)
+            return SourceCodeLocation.fromPosition(filePath, firstToken.getLine(), firstToken.getCharPositionInLine() + 1);
+        else
+            return SourceCodeLocation.fromRange(filePath,
+                firstToken.getLine(), firstToken.getCharPositionInLine() + 1,
+                lastToken.getLine(), lastToken.getCharPositionInLine() + lastToken.getText().length());
     }
 }
