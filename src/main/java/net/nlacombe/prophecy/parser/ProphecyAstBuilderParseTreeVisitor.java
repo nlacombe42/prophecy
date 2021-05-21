@@ -6,6 +6,7 @@ import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIntegerLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyStringLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyVariableDeclarationAstNode;
@@ -53,13 +54,20 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
     }
 
     @Override
-    public List<ProphecyAstNode> visitExpressionSelectionCall(ProphecyParser.ExpressionSelectionCallContext expressionSelectionCallContext) {
-        var sourceCodeLocation = getSourceCodeLocation(expressionSelectionCallContext);
-        var expressionChildren = visitChildren(expressionSelectionCallContext.expression());
+    public List<ProphecyAstNode> visitSelectionCallExpression(ProphecyParser.SelectionCallExpressionContext selectionCallExpressionContext) {
+        var sourceCodeLocation = getSourceCodeLocation(selectionCallExpressionContext);
+        var expressionChildren = visit(selectionCallExpressionContext.expression());
         var expression = (ProphecyExpressionAstNode) expressionChildren.get(0);
-        var call = (ProphecyCallAstNode) visitCall(expressionSelectionCallContext.call()).get(0);
+        var call = (ProphecyCallAstNode) visitCall(selectionCallExpressionContext.call()).get(0);
 
         return List.of(new ProphecyCallSelectionExpressionAstNode(sourceCodeLocation, expression, call));
+    }
+
+    @Override
+    public List<ProphecyAstNode> visitIdentifierExpression(ProphecyParser.IdentifierExpressionContext identifierExpressionContext) {
+        var sourceCodeLocation = getSourceCodeLocation(identifierExpressionContext);
+
+        return List.of(new ProphecyIdentifierExpressionAstNode(sourceCodeLocation, identifierExpressionContext.identifier.getText()));
     }
 
     @Override

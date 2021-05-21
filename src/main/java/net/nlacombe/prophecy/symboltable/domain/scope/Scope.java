@@ -21,6 +21,9 @@ public interface Scope {
      */
     void define(Symbol symbol);
 
+    /**
+     * @return null if not found
+     */
     Symbol resolve(SymbolSignature signature);
 
     static String toString(Map<SymbolSignature, Symbol> symbols, List<Scope> childScopes) {

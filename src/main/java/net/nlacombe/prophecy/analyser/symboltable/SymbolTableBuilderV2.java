@@ -21,7 +21,7 @@ public class SymbolTableBuilderV2 {
         globalScope.define(mainMethod);
 
         new SymbolDefinerV2(globalScope, mainMethod, buildMessageService).visit(astRoot);
-        new SymbolResolverV2().visit(astRoot);
+        new SymbolResolverV2(buildMessageService).visit(astRoot);
 
         return globalScope;
     }

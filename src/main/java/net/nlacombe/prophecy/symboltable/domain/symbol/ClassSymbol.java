@@ -158,6 +158,10 @@ public class ClassSymbol extends Symbol implements Scope, Type {
             .collect(Collectors.toList());
     }
 
+    public String getFullyQualifiedName() {
+        return getNameWithParameterTypesOrSubstitution();
+    }
+
     public ClassSymbol getSuperClass() {
         return superClass;
     }

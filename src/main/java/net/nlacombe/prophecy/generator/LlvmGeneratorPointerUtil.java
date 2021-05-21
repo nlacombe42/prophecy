@@ -8,6 +8,23 @@ import java.io.Writer;
 
 public class LlvmGeneratorPointerUtil {
 
+    public static LlvmSymbol convert(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, LlvmSymbol symbol, String targetType) {
+        var symbolType = symbol.getType();
+
+        if (!symbolType.endsWith("*") && !targetType.endsWith("*") && !StringUtils.equals(symbolType, targetType))
+            throw new ProphecyCompilerException("llvm types fundamentally incompatible: " + symbolType + " and " + targetType);
+
+        var symbolPointerLevel = StringUtils.countMatches(symbolType, "*");
+        var targetPointerLevel = StringUtils.countMatches(targetType, "*");
+
+        if (symbolPointerLevel > targetPointerLevel)
+            return convert(writer, llvmTemporaryNameGenerator, dereference(writer, llvmTemporaryNameGenerator, symbol), targetType);
+        else if (symbolPointerLevel < targetPointerLevel)
+            return convert(writer, llvmTemporaryNameGenerator, wrap(writer, llvmTemporaryNameGenerator, symbol, null), targetType);
+        else
+            return symbol;
+    }
+
     public static LlvmSymbol getPointer(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, LlvmSymbol symbol) {
         var symbolType = symbol.getType();
 
@@ -70,5 +87,4 @@ public class LlvmGeneratorPointerUtil {
             throw new RuntimeException(e);
         }
     }
-
 }

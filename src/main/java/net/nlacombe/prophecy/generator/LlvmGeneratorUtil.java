@@ -18,11 +18,11 @@ public class LlvmGeneratorUtil {
     private static final ProphecySpecialTypeSymbols specialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
 
     public static String getLlvmType(Type type) {
-        if (bootstrapTypeSymbols.getVoidClass().equals(type))
+        if (Type.sameType(type, bootstrapTypeSymbols.getVoidClass()))
             return "void";
-        if (bootstrapTypeSymbols.getUInt8Class().equals(type))
+        else if (Type.sameType(type, bootstrapTypeSymbols.getUInt8Class()))
             return "i8";
-        if (bootstrapTypeSymbols.getStringClass().equals(type) || specialTypeSymbols.getUInt8Array().equals(type))
+        else if (Type.sameType(type, bootstrapTypeSymbols.getStringClass()) || Type.sameType(type, specialTypeSymbols.getUInt8Array()))
             return "i8*";
         else
             throw new ProphecyCompilerException("Unimplemented llvm type for prophecy type: " + type);
@@ -51,6 +51,17 @@ public class LlvmGeneratorUtil {
         return uInt8ArrayValues.stream()
             .map(LlvmGeneratorUtil::toLlvmStringLiteralHexSequence)
             .collect(Collectors.joining());
+    }
+
+    public static String getLlvmReferenceFromType(Type type) {
+        var llvmType = getLlvmType(type);
+
+        if (llvmType.endsWith("**"))
+            return llvmType;
+        else if (llvmType.endsWith("*"))
+            return llvmType + "*";
+        else
+            return llvmType + "**";
     }
 
     private static String toLlvmStringLiteralHexSequence(int integer) {

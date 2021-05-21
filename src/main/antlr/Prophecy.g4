@@ -34,9 +34,10 @@ expressionList: expression (', ' expression)*;
 variableDeclaration: 'val' ' ' variableName=NON_TYPE_IDENTIFIER ' = ' initializer=expression;
 
 expression
-    : literal #expressionLiteral
-    | call #expressionCall
-    | expression '.' call #expressionSelectionCall
+    : literal #literalExpression
+    | call #callExpression
+    | expression '.' call #selectionCallExpression
+    | identifier=NON_TYPE_IDENTIFIER #identifierExpression
     ;
 
 literal
