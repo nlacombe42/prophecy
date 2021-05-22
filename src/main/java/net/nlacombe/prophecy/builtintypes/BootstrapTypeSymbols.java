@@ -7,6 +7,7 @@ import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.VariableSymbol;
 
 import java.util.List;
+import java.util.Map;
 
 public class BootstrapTypeSymbols {
 
@@ -36,7 +37,14 @@ public class BootstrapTypeSymbols {
     }
 
     public List<Symbol> getAll() {
-        return List.of(objectClass, voidClass, uInt8Class, arrayClass, stringClass, systemClass);
+        return List.of(
+            objectClass,
+            voidClass,
+            uInt8Class,
+            arrayClass,
+            stringClass,
+            systemClass
+        );
     }
 
     private ClassSymbol getArrayClassSymbol(ClassSymbol objectClass, ClassSymbol uInt8Class) {
@@ -47,6 +55,7 @@ public class BootstrapTypeSymbols {
         arrayClass.define(MethodSymbol.newClassMethod("get", parameterType, arrayClass, false, List.of(indexParameter)));
 
         arrayClass.define(MethodSymbol.newClassMethod("size", uInt8Class, arrayClass, false, List.of()));
+        arrayClass.define(getInternalUInt8ArrayRangeMethodSymbol(voidClass, arrayClass, uInt8Class));
 
         return arrayClass;
     }
@@ -70,6 +79,19 @@ public class BootstrapTypeSymbols {
         var parameters = List.of(new VariableSymbol("s", stringClass));
 
         return MethodSymbol.newClassMethod("println", voidClass, systemClass, true, parameters);
+    }
+
+    private MethodSymbol getInternalUInt8ArrayRangeMethodSymbol(ClassSymbol voidClass, ClassSymbol arrayClass, ClassSymbol uInt8Class) {
+        var parameterType = arrayClass.getParameterTypes().get(0);
+        var uInt8Array = arrayClass.substitute(Map.of(parameterType, uInt8Class));
+
+        var parameters = List.of(
+            new VariableSymbol("array", uInt8Array),
+            new VariableSymbol("start", uInt8Class),
+            new VariableSymbol("end", uInt8Class)
+        );
+
+        return MethodSymbol.newClassMethod("$range", voidClass, arrayClass, true, parameters);
     }
 
     public ClassSymbol getVoidClass() {

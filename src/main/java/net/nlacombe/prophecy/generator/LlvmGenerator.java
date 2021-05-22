@@ -126,6 +126,34 @@ public class LlvmGenerator {
             ret void
             """);
 
+        customLlvmCodeByMethodSignature.put(prophecySpecialTypeSymbols.getInternalArrayRangeMethodSignature(), """
+            entry:
+                %0 = sub i8 %end, %start
+                %size = add i8 %0, 1
+                %index = alloca i8
+                store i8 0, i8* %index
+                br label %for.cond
+
+            for.cond:
+                %1 = load i8, i8* %index
+                %cond = icmp ult i8 %1, %size
+                br i1 %cond, label %for.body, label %for.end
+
+            for.body:
+                %indexValue = load i8, i8* %index
+                %value = add i8 %indexValue, %start
+
+                %arrayValuePointer = getelementptr i8, i8* %array, i8 %indexValue
+                store i8 %value, i8* %arrayValuePointer
+
+                %newIndexValue = add i8 %indexValue, 1
+                store i8 %newIndexValue, i8* %index
+                br label %for.cond
+
+            for.end:
+                ret void
+            """);
+
         return customLlvmCodeByMethodSignature;
     }
 }

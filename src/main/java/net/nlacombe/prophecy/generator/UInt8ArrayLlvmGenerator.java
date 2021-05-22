@@ -42,8 +42,8 @@ public class UInt8ArrayLlvmGenerator {
             var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
 
             var llvmCode = """
-                $indexPointerName = getelementptr i8, i8* $arrayPointerName, i8 0
-                $returnValueName = load i8, i8* $indexPointerName ; get value from UInt8 array end
+                $indexPointerName = getelementptr i8, i8* $arrayPointerName, i8 0 ; get size from UInt8 array start
+                $returnValueName = load i8, i8* $indexPointerName ; get size from UInt8 array end
                 """
                 .replace("$arrayPointerName", arrayPointerLlvmSymbol.getName())
                 .replace("$indexPointerName", indexPointerName)
