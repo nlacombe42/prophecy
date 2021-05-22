@@ -17,7 +17,7 @@ public class PrintlnStringIntegrationTest {
     @Test
     public void println_string_all_escapes() {
         var prophecyCode = """
-            println("newline\\ntab\\tcarriage return\\rafter carriage return. quote\\"backslash\\\\")
+            System.println("newline\\ntab\\tcarriage return\\rafter carriage return. quote\\"backslash\\\\")
             """;
         var expectedString = "newline\ntab\tcarriage return\rafter carriage return. quote\"backslash\\";
 
@@ -27,7 +27,7 @@ public class PrintlnStringIntegrationTest {
     @Test
     public void println_string_interpolation_result_in_error() {
         var prophecyCode = """
-            println("we are trying ${forbidenStringInterpolation}")
+            System.println("we are trying ${forbidenStringInterpolation}")
             """;
 
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
@@ -40,7 +40,7 @@ public class PrintlnStringIntegrationTest {
 
     private void test_println_string_without_escape(String expectedString) {
         var prophecyCode = """
-            println("$expectedString")
+            System.println("$expectedString")
             """
             .replace("$expectedString", String.valueOf(expectedString));
 

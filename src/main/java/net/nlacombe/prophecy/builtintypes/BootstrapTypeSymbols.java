@@ -17,8 +17,7 @@ public class BootstrapTypeSymbols {
     private final ClassSymbol uInt8Class;
     private final ClassSymbol arrayClass;
     private final ClassSymbol stringClass;
-    private final MethodSymbol systemPrintlnUInt8;
-    private final MethodSymbol systemPrintlnString;
+    private final ClassSymbol systemClass;
 
     private BootstrapTypeSymbols() {
         objectClass = ClassSymbol.newFromClassDefinition("Object", null, null);
@@ -26,8 +25,7 @@ public class BootstrapTypeSymbols {
         uInt8Class = ClassSymbol.newFromClassDefinition("UInt8", objectClass, null);
         arrayClass = getArrayClassSymbol(objectClass, uInt8Class);
         stringClass = ClassSymbol.newFromClassDefinition("String", objectClass, null);
-        systemPrintlnUInt8 = getSystemPrintlnUInt8MethodSymbol(voidClass, uInt8Class);
-        systemPrintlnString = getSystemPrintlnStringMethodSymbol(voidClass, stringClass);
+        systemClass = getSystemClassSymbol(objectClass, voidClass, uInt8Class, stringClass);
     }
 
     public static BootstrapTypeSymbols getInstance() {
@@ -38,12 +36,11 @@ public class BootstrapTypeSymbols {
     }
 
     public List<Symbol> getAll() {
-        return List.of(objectClass, voidClass, uInt8Class, arrayClass, stringClass, systemPrintlnUInt8, systemPrintlnString);
+        return List.of(objectClass, voidClass, uInt8Class, arrayClass, stringClass, systemClass);
     }
 
     private ClassSymbol getArrayClassSymbol(ClassSymbol objectClass, ClassSymbol uInt8Class) {
         var parameterType = new NamedParameterType("T");
-
         var arrayClass = ClassSymbol.newFromClassDefinition("Array", objectClass, null, List.of(parameterType));
 
         var indexParameter = new VariableSymbol("index", uInt8Class);
@@ -54,16 +51,25 @@ public class BootstrapTypeSymbols {
         return arrayClass;
     }
 
-    private MethodSymbol getSystemPrintlnUInt8MethodSymbol(ClassSymbol voidClass, ClassSymbol uInt8Class) {
-        var parameters = List.of(new VariableSymbol("i", uInt8Class));
+    private ClassSymbol getSystemClassSymbol(ClassSymbol objectClass, ClassSymbol voidClass, ClassSymbol uInt8Class, ClassSymbol stringClass) {
+        var systemClass = ClassSymbol.newFromClassDefinition("System", objectClass, null, List.of());
 
-        return MethodSymbol.newGlobalMethod("println", voidClass, null, parameters);
+        systemClass.define(getSystemPrintlnUInt8MethodSymbol(systemClass, voidClass, uInt8Class));
+        systemClass.define(getSystemPrintlnStringMethodSymbol(systemClass, voidClass, stringClass));
+
+        return systemClass;
     }
 
-    private MethodSymbol getSystemPrintlnStringMethodSymbol(ClassSymbol voidClass, ClassSymbol stringClass) {
+    private MethodSymbol getSystemPrintlnUInt8MethodSymbol(ClassSymbol systemClass, ClassSymbol voidClass, ClassSymbol uInt8Class) {
+        var parameters = List.of(new VariableSymbol("i", uInt8Class));
+
+        return MethodSymbol.newClassMethod("println", voidClass, systemClass, true, parameters);
+    }
+
+    private MethodSymbol getSystemPrintlnStringMethodSymbol(ClassSymbol systemClass, ClassSymbol voidClass, ClassSymbol stringClass) {
         var parameters = List.of(new VariableSymbol("s", stringClass));
 
-        return MethodSymbol.newGlobalMethod("println", voidClass, null, parameters);
+        return MethodSymbol.newClassMethod("println", voidClass, systemClass, true, parameters);
     }
 
     public ClassSymbol getVoidClass() {
@@ -86,11 +92,7 @@ public class BootstrapTypeSymbols {
         return stringClass;
     }
 
-    public MethodSymbol getSystemPrintlnUInt8() {
-        return systemPrintlnUInt8;
-    }
-
-    public MethodSymbol getSystemPrintlnString() {
-        return systemPrintlnString;
+    public ClassSymbol getSystemClass() {
+        return systemClass;
     }
 }

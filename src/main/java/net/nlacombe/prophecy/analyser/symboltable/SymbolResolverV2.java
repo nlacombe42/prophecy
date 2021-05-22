@@ -5,7 +5,6 @@ import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.symboltable.domain.signature.NameOnlySymbolSignature;
-import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
 public class SymbolResolverV2 extends ProphecyAstVisitor<Void> {
 

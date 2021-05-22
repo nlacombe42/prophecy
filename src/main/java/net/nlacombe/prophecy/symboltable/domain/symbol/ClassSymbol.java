@@ -170,6 +170,10 @@ public class ClassSymbol extends Symbol implements Scope, Type {
         return parameterTypes;
     }
 
+    public List<Symbol> getMembers() {
+        return List.copyOf(members.values());
+    }
+
     private String getParameterTypesOrSubstitutionListText() {
         return getSubstitutedParameterTypes().stream()
             .map(Type::getName)

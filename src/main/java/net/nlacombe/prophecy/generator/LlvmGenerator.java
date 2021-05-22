@@ -2,8 +2,10 @@ package net.nlacombe.prophecy.generator;
 
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
-import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
+import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
+import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
+import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.util.WriterUtil;
@@ -18,6 +20,9 @@ import java.util.stream.Collectors;
 
 public class LlvmGenerator {
 
+    private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
+    private static final ProphecySpecialTypeSymbols prophecySpecialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
+
     public void generate(Writer writer, GlobalScope globalScope) {
         WriterUtil.writeRuntimeException(writer, "declare i32 @printf(i8*, ...)\n\n");
 
@@ -28,16 +33,20 @@ public class LlvmGenerator {
         symbols.forEach(symbol -> {
             if (symbol instanceof MethodSymbol) {
                 generate(writer, (MethodSymbol) symbol);
-            }
-
-            WriterUtil.writeRuntimeException(writer, "\n");
+            } else if (symbol instanceof ClassSymbol)
+                generate(writer, ((ClassSymbol) symbol).getMembers());
         });
     }
 
     public void generate(Writer writer, MethodSymbol methodSymbol) {
         try {
+            var methodSignature = methodSymbol.getSignature();
+
+            if (getSpecialInlineMethodSignatures().contains(methodSignature))
+                return;
+
             var customLlvmCodeByMethodSignature = getCustomLlvmCodeByMethodSignature();
-            var customLlvmCode = customLlvmCodeByMethodSignature.get(methodSymbol.getSignature());
+            var customLlvmCode = customLlvmCodeByMethodSignature.get(methodSignature);
             String methodLlvmCode;
 
             if (customLlvmCode != null) {
@@ -55,7 +64,7 @@ public class LlvmGenerator {
                         stringWriter.write("; end of statement\n\n");
                     });
 
-                    if (BootstrapTypeSymbols.getInstance().getVoidClass().equals(methodSymbol.getType()))
+                    if (bootstrapTypeSymbols.getVoidClass().equals(methodSymbol.getType()))
                         stringWriter.write("ret void\n");
 
                     methodLlvmCode = stringWriter.toString();
@@ -63,6 +72,7 @@ public class LlvmGenerator {
             }
 
             generate(writer, methodSymbol, methodLlvmCode);
+            WriterUtil.writeRuntimeException(writer, "\n");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -90,28 +100,31 @@ public class LlvmGenerator {
         }
     }
 
+    private List<MethodSignature> getSpecialInlineMethodSignatures() {
+        return List.of(
+            prophecySpecialTypeSymbols.getUInt8ArrayGetMethodSignature(),
+            prophecySpecialTypeSymbols.getUInt8ArraySizeMethodSignature()
+        );
+    }
+
     private Map<MethodSignature, String> getCustomLlvmCodeByMethodSignature() {
         var customLlvmCodeByMethodSignature = new HashMap<MethodSignature, String>();
 
-        var printlnIntSystemMethodSymbol = BootstrapTypeSymbols.getInstance().getSystemPrintlnUInt8();
-        customLlvmCodeByMethodSignature.put(printlnIntSystemMethodSymbol.getSignature(), """
+        customLlvmCodeByMethodSignature.put(prophecySpecialTypeSymbols.getSystemPrintlnUInt8MethodSignature(), """
             %1 = alloca [4 x i8]
             store [4 x i8] c"%d\\0A\\00", [4 x i8]* %1
             %2 = bitcast [4 x i8]* %1 to i8*
-            call i32 (i8*, ...) @printf(i8* %2, i8 %$argumentName)
+            call i32 (i8*, ...) @printf(i8* %2, i8 %i)
             ret void
-            """
-            .replace("$argumentName", printlnIntSystemMethodSymbol.getParameter(0).getName()));
+            """);
 
-        var printlnStringSystemMethodSignature = BootstrapTypeSymbols.getInstance().getSystemPrintlnString();
-        customLlvmCodeByMethodSignature.put(printlnStringSystemMethodSignature.getSignature(), """
+        customLlvmCodeByMethodSignature.put(prophecySpecialTypeSymbols.getSystemPrintlnStringMethodSignature(), """
             %1 = alloca [4 x i8]
             store [4 x i8] c"%s\\0A\\00", [4 x i8]* %1
             %2 = bitcast [4 x i8]* %1 to i8*
-            call i32 (i8*, ...) @printf(i8* %2, i8* %$argumentName)
+            call i32 (i8*, ...) @printf(i8* %2, i8* %s)
             ret void
-            """
-            .replace("$argumentName", printlnStringSystemMethodSignature.getParameter(0).getName()));
+            """);
 
         return customLlvmCodeByMethodSignature;
     }

@@ -1,2 +1,3 @@
-val val = "yes! val!"
-println(val)
+val arr = [1, 42]
+val val = arr.get(1)
+System.println(val)

@@ -14,5 +14,9 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 # prophecy
-output.ll
-output.bc
+/output.ll
+/output.bc
+
+# dev test
+/test.c
+/test.ll

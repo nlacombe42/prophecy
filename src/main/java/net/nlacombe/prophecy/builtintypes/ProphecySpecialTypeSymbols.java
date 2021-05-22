@@ -9,6 +9,7 @@ import java.util.Map;
 public class ProphecySpecialTypeSymbols {
 
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
+    private static final ClassSymbol uInt8Class = bootstrapTypeSymbols.getUInt8Class();
 
     private static ProphecySpecialTypeSymbols instance;
 
@@ -33,17 +34,32 @@ public class ProphecySpecialTypeSymbols {
         var arrayClass = bootstrapTypeSymbols.getArrayClass();
         var parameterType = arrayClass.getParameterTypes().get(0);
 
-        return arrayClass.substitute(Map.of(parameterType, bootstrapTypeSymbols.getUInt8Class()));
+        return arrayClass.substitute(Map.of(parameterType, uInt8Class));
     }
 
     public MethodSignature getUInt8ArrayGetMethodSignature() {
-        var methodSymbol = uInt8Array.resolve(new MethodSignature("get", List.of(bootstrapTypeSymbols.getUInt8Class())));
+        var methodSymbol = uInt8Array.resolve(new MethodSignature("get", List.of(uInt8Class)));
 
         return (MethodSignature) methodSymbol.getSignature();
     }
 
     public MethodSignature getUInt8ArraySizeMethodSignature() {
         var methodSymbol = uInt8Array.resolve(new MethodSignature("size", List.of()));
+
+        return (MethodSignature) methodSymbol.getSignature();
+    }
+
+    public MethodSignature getSystemPrintlnUInt8MethodSignature() {
+        var systemClass = bootstrapTypeSymbols.getSystemClass();
+        var methodSymbol = systemClass.resolve(new MethodSignature("println", List.of(uInt8Class)));
+
+        return (MethodSignature) methodSymbol.getSignature();
+    }
+
+    public MethodSignature getSystemPrintlnStringMethodSignature() {
+        var systemClass = bootstrapTypeSymbols.getSystemClass();
+        var stringClass = bootstrapTypeSymbols.getStringClass();
+        var methodSymbol = systemClass.resolve(new MethodSignature("println", List.of(stringClass)));
 
         return (MethodSignature) methodSymbol.getSignature();
     }

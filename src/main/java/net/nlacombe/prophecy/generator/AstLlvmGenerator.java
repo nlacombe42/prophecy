@@ -3,7 +3,6 @@ package net.nlacombe.prophecy.generator;
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIntegerLiteralAstNode;
@@ -13,7 +12,9 @@ import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.symboltable.domain.Type;
+import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.util.WriterUtil;
 import org.apache.commons.collections4.ListUtils;
 
 import java.io.IOException;
@@ -53,7 +54,6 @@ public class AstLlvmGenerator {
         var astNodeClass = astNode.getClass();
         var generatorsByAstNodeType = new HashMap<Class<? extends ProphecyAstNode>, Function<ProphecyExpressionAstNode, LlvmSymbol>>();
         generatorsByAstNodeType.put(ProphecyCallAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyCallAstNode) node));
-        generatorsByAstNodeType.put(ProphecyCallSelectionExpressionAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyCallSelectionExpressionAstNode) node));
         generatorsByAstNodeType.put(ProphecyIntegerLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyIntegerLiteralAstNode) node));
         generatorsByAstNodeType.put(ProphecyStringLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyStringLiteralAstNode) node));
         generatorsByAstNodeType.put(ProphecyArrayLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyArrayLiteralAstNode) node));
@@ -127,65 +127,62 @@ public class AstLlvmGenerator {
     }
 
     private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyCallAstNode astNode) {
-        try {
-            var methodSymbol = astNode.getMethodSymbol();
-            var parameterLlvmTypes = methodSymbol.getParameters().stream()
-                .map(Symbol::getType)
-                .map(LlvmGeneratorUtil::getLlvmType)
-                .collect(Collectors.toList());
-            var arguments = astNode.getArguments();
-            var llvmArguments = IntStream.range(0, astNode.getArguments().size())
-                .mapToObj(i -> {
-                    var argument = arguments.get(i);
-                    var parameterLlvmType = parameterLlvmTypes.get(i);
-                    var llvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, argument);
+        var expression = astNode.getExpression();
+        var expressionType = expression.getEvaluatedType();
+        var methodSymbol = astNode.getMethodSymbol();
+        var methodSignature = methodSymbol.getSignature();
+        var arguments = astNode.getArguments();
 
-                    return LlvmGeneratorPointerUtil.convert(writer, llvmTemporaryNameGenerator, llvmSymbol, parameterLlvmType);
-                })
-                .map(argumentSymbol -> argumentSymbol.getType() + " " + argumentSymbol.getName())
-                .collect(Collectors.joining(", "));
+        if (Type.sameType(expressionType, specialTypeSymbols.getUInt8Array())) {
+            var arrayLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, expression);
+            var arrayPointerLlvmSymbol = LlvmGeneratorPointerUtil.getPointer(writer, llvmTemporaryNameGenerator, arrayLlvmSymbol);
 
-            var llvmCode = "call $returnType ($parameterTypes) $functionName($arguments) ; call ast node\n"
-                .replace("$returnType", LlvmGeneratorUtil.getLlvmType(methodSymbol.getType()))
-                .replace("$parameterTypes", String.join(", ", parameterLlvmTypes))
-                .replace("$functionName", LlvmGeneratorUtil.getLlvmFunctionName(methodSymbol))
-                .replace("$arguments", llvmArguments);
+            if (specialTypeSymbols.getUInt8ArrayGetMethodSignature().equals(methodSignature)) {
+                var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, arguments.get(0));
 
-            LlvmSymbol returnLlvmSymbol = null;
-
-            if (!Type.sameType(methodSymbol.getType(), bootstrapTypeSymbols.getVoidClass())) {
-                var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-
-                llvmCode = returnValueName + " = " + llvmCode;
-                returnLlvmSymbol = new LlvmSymbol(LlvmGeneratorUtil.getLlvmType(methodSymbol.getType()), returnValueName);
-            }
-
-            writer.write(llvmCode);
-
-            return returnLlvmSymbol;
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+                return UInt8ArrayLlvmGenerator.generateUInt8ArrayGet(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol, indexLlvmSymbol);
+            } else if (specialTypeSymbols.getUInt8ArraySizeMethodSignature().equals(methodSignature))
+                return UInt8ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol);
+            else
+                throw new ProphecyCompilerException("llvm generator has no implementation for this Array<UInt8> method: " + methodSignature);
+        } else
+            return generateCall(writer, llvmTemporaryNameGenerator, methodSymbol, arguments);
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyCallSelectionExpressionAstNode astNode) {
-        var selectionExpression = astNode.getSelectionExpression();
-        var methodSymbol = astNode.getCall().getMethodSymbol();
-        var methodSignature = methodSymbol.getSignature();
+    private static LlvmSymbol generateCall(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, MethodSymbol methodSymbol, List<ProphecyExpressionAstNode> arguments) {
+        var parameterLlvmTypes = methodSymbol.getParameters().stream()
+            .map(Symbol::getType)
+            .map(LlvmGeneratorUtil::getLlvmType)
+            .collect(Collectors.toList());
+        var llvmArguments = IntStream.range(0, arguments.size())
+            .mapToObj(i -> {
+                var argument = arguments.get(i);
+                var parameterLlvmType = parameterLlvmTypes.get(i);
+                var llvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, argument);
 
-        validateIsUInt8Array(selectionExpression.getEvaluatedType());
+                return LlvmGeneratorPointerUtil.convert(writer, llvmTemporaryNameGenerator, llvmSymbol, parameterLlvmType);
+            })
+            .map(argumentSymbol -> argumentSymbol.getType() + " " + argumentSymbol.getName())
+            .collect(Collectors.joining(", "));
 
-        var arrayLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, selectionExpression);
-        var arrayPointerLlvmSymbol = LlvmGeneratorPointerUtil.getPointer(writer, llvmTemporaryNameGenerator, arrayLlvmSymbol);
+        var llvmCode = "call $returnType ($parameterTypes) $functionName($arguments) ; call ast node\n"
+            .replace("$returnType", LlvmGeneratorUtil.getLlvmType(methodSymbol.getType()))
+            .replace("$parameterTypes", String.join(", ", parameterLlvmTypes))
+            .replace("$functionName", LlvmGeneratorUtil.getLlvmFunctionName(methodSymbol))
+            .replace("$arguments", llvmArguments);
 
-        if (specialTypeSymbols.getUInt8ArrayGetMethodSignature().equals(methodSignature)) {
-            var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, astNode.getCall().getArguments().get(0));
+        LlvmSymbol returnLlvmSymbol = null;
 
-            return UInt8ArrayLlvmGenerator.generateUInt8ArrayGet(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol, indexLlvmSymbol);
-        } else if (specialTypeSymbols.getUInt8ArraySizeMethodSignature().equals(methodSignature))
-            return UInt8ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol);
-        else
-            throw new ProphecyCompilerException("llvm generator has no implementation for this Array<UInt8> method: " + methodSignature);
+        if (!Type.sameType(methodSymbol.getType(), bootstrapTypeSymbols.getVoidClass())) {
+            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+
+            llvmCode = returnValueName + " = " + llvmCode;
+            returnLlvmSymbol = new LlvmSymbol(LlvmGeneratorUtil.getLlvmType(methodSymbol.getType()), returnValueName);
+        }
+
+        WriterUtil.writeRuntimeException(writer, llvmCode);
+
+        return returnLlvmSymbol;
     }
 
     private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyArrayLiteralAstNode astNode) {
@@ -224,11 +221,6 @@ public class AstLlvmGenerator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private static void validateIsUInt8Array(Type type) {
-        if (!Type.sameType(type, specialTypeSymbols.getUInt8Array()))
-            throw new ProphecyCompilerException("only selection expression calls for Array<UInt8> are supported by the llvm generator");
     }
 
     private static List<Integer> getArrayUInt8Elements(ProphecyArrayLiteralAstNode astNode) {

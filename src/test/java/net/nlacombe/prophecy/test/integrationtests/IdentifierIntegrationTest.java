@@ -13,7 +13,7 @@ public class IdentifierIntegrationTest {
     @Test
     public void unknown_identifier_throws_error() {
         var prophecyCode = """
-            println(v2)
+            System.println(v2)
             """;
 
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
@@ -25,7 +25,7 @@ public class IdentifierIntegrationTest {
         var prophecyCode = """
             val agi = [$randomUInt8].get(0)
             val v2 = agi
-            println(v2)
+            System.println(v2)
             """
             .replace("$randomUInt8", "" + randomUInt8);
 
@@ -39,7 +39,7 @@ public class IdentifierIntegrationTest {
         var thirdRandomUInt8 = new Random().nextInt(256);
         var prophecyCode = """
             val arr = [$firstRandomUInt8, $expectedRandomUInt8, $thirdRandomUInt8]
-            println(arr.get(1))
+            System.println(arr.get(1))
             """
             .replace("$firstRandomUInt8", "" + firstRandomUInt8)
             .replace("$expectedRandomUInt8", "" + expectedRandomUInt8)

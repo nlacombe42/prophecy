@@ -3,7 +3,6 @@ package net.nlacombe.prophecy.parser;
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
-import net.nlacombe.prophecy.ast.node.ProphecyCallSelectionExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
@@ -21,6 +20,7 @@ import org.apache.commons.collections4.ListUtils;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List<ProphecyAstNode>> {
@@ -41,8 +41,8 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
     @Override
     public List<ProphecyAstNode> visitCall(ProphecyParser.CallContext callContext) {
         var sourceCodeLocation = getSourceCodeLocation(callContext);
-
-        var argumentNodes = visitChildren(callContext);
+        var expressionNode = getOneExpressionNode(visit(callContext.expression()));
+        var argumentNodes = visitOrEmptyList(callContext.arguments);
 
         validateArgumentsAreExpressions(sourceCodeLocation, argumentNodes);
 
@@ -50,24 +50,30 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
             .map(node -> (ProphecyExpressionAstNode) node)
             .collect(Collectors.toList());
 
-        return List.of(new ProphecyCallAstNode(sourceCodeLocation, callContext.methodName.getText(), expressionArgumentNodes));
+        return List.of(new ProphecyCallAstNode(sourceCodeLocation, expressionNode, callContext.methodName.getText(), expressionArgumentNodes));
     }
 
     @Override
     public List<ProphecyAstNode> visitSelectionCallExpression(ProphecyParser.SelectionCallExpressionContext selectionCallExpressionContext) {
         var sourceCodeLocation = getSourceCodeLocation(selectionCallExpressionContext);
-        var expressionChildren = visit(selectionCallExpressionContext.expression());
-        var expression = (ProphecyExpressionAstNode) expressionChildren.get(0);
-        var call = (ProphecyCallAstNode) visitCall(selectionCallExpressionContext.call()).get(0);
+        var expressionNode = getOneExpressionNode(visit(selectionCallExpressionContext.expression()));
+        var argumentNodes = visitOrEmptyList(selectionCallExpressionContext.arguments);
 
-        return List.of(new ProphecyCallSelectionExpressionAstNode(sourceCodeLocation, expression, call));
+        validateArgumentsAreExpressions(sourceCodeLocation, argumentNodes);
+
+        var expressionArgumentNodes = argumentNodes.stream()
+            .map(node -> (ProphecyExpressionAstNode) node)
+            .collect(Collectors.toList());
+
+        return List.of(new ProphecyCallAstNode(sourceCodeLocation, expressionNode, selectionCallExpressionContext.methodName.getText(), expressionArgumentNodes));
     }
 
     @Override
     public List<ProphecyAstNode> visitIdentifierExpression(ProphecyParser.IdentifierExpressionContext identifierExpressionContext) {
         var sourceCodeLocation = getSourceCodeLocation(identifierExpressionContext);
+        var identifier = identifierExpressionContext.identifier.getText();
 
-        return List.of(new ProphecyIdentifierExpressionAstNode(sourceCodeLocation, identifierExpressionContext.identifier.getText()));
+        return List.of(new ProphecyIdentifierExpressionAstNode(sourceCodeLocation, identifier));
     }
 
     @Override
@@ -168,5 +174,12 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
             return SourceCodeLocation.fromRange(filePath,
                 firstToken.getLine(), firstToken.getCharPositionInLine() + 1,
                 lastToken.getLine(), lastToken.getCharPositionInLine() + lastToken.getText().length());
+    }
+
+    private List<ProphecyAstNode> visitOrEmptyList(ParserRuleContext parserRuleContext) {
+        if (parserRuleContext == null)
+            return List.of();
+
+        return visit(parserRuleContext);
     }
 }

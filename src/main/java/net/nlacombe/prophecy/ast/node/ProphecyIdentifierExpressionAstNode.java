@@ -2,6 +2,7 @@ package net.nlacombe.prophecy.ast.node;
 
 import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 import net.nlacombe.prophecy.symboltable.domain.Type;
+import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
 import java.util.List;
@@ -32,7 +33,10 @@ public class ProphecyIdentifierExpressionAstNode extends AbstractProphecyAstNode
 
     @Override
     public Type getEvaluatedType() {
-        return symbol == null ? null : symbol.getType();
+        if (symbol == null)
+            return null;
+
+        return symbol instanceof ClassSymbol ? (ClassSymbol) symbol : symbol.getType();
     }
 
     @Override

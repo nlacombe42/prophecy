@@ -27,7 +27,7 @@ public class PrintlnIntegrationTest {
 
     private void test_println_integer(int expectedNumber) {
         var prophecyCode = """
-            println($expectedNumber)
+            System.println($expectedNumber)
             """
             .replace("$expectedNumber", String.valueOf(expectedNumber));
 

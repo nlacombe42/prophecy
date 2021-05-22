@@ -4,6 +4,8 @@ import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.util.CollectionUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -11,15 +13,26 @@ import java.util.stream.Collectors;
 
 public class ProphecyCallAstNode extends AbstractProphecyExpressionAstNode {
 
+    private final ProphecyExpressionAstNode expression;
     private final String methodName;
     private final List<ProphecyExpressionAstNode> arguments;
     private MethodSymbol methodSymbol;
 
-    public ProphecyCallAstNode(SourceCodeLocation definitionSourceCodeLocation, String methodName, List<ProphecyExpressionAstNode> arguments) {
+    public ProphecyCallAstNode(
+        SourceCodeLocation definitionSourceCodeLocation,
+        ProphecyExpressionAstNode expression,
+        String methodName,
+        List<ProphecyExpressionAstNode> arguments
+    ) {
         super(definitionSourceCodeLocation);
 
+        this.expression = expression;
         this.methodName = methodName;
         this.arguments = arguments;
+    }
+
+    public ProphecyExpressionAstNode getExpression() {
+        return expression;
     }
 
     public String getMethodName() {
@@ -40,7 +53,9 @@ public class ProphecyCallAstNode extends AbstractProphecyExpressionAstNode {
 
     @Override
     public List<ProphecyAstNode> getChildren() {
-        return CollectionUtil.castToGeneric(arguments, ProphecyAstNode.class);
+        var argumentsNodes = CollectionUtil.castToGeneric(arguments, ProphecyAstNode.class);
+
+        return ListUtils.union(List.of(expression), argumentsNodes);
     }
 
     public void setEvaluatedType(Type evaluatedType) {
@@ -53,7 +68,8 @@ public class ProphecyCallAstNode extends AbstractProphecyExpressionAstNode {
             .map(Objects::toString)
             .collect(Collectors.joining(", "));
 
-        return "$methodName($arguments)"
+        return "$expression.$methodName($arguments)"
+            .replace("$expression", "" + expression)
             .replace("$methodName", methodName)
             .replace("$arguments", arguments);
     }
