@@ -4,6 +4,7 @@ import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
+import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import org.apache.commons.collections4.ListUtils;
@@ -85,16 +86,18 @@ public class LlvmGeneratorUtil {
         var functionNamePartsLlvm = new ArrayList<String>();
 
         if (methodSymbol.getParentClass() != null)
-            functionNamePartsLlvm.add(methodSymbol.getParentClass().getName());
+            functionNamePartsLlvm.add(methodSymbol.getParentClass().getFullyQualifiedName());
 
         functionNamePartsLlvm.addAll(getNameParts(methodSymbol.getSignature()));
 
-        return functionNamePartsLlvm;
+        return functionNamePartsLlvm.stream()
+            .map(name -> name.replaceAll("[<>,]", "_"))
+            .collect(Collectors.toList());
     }
 
     private static List<String> getNameParts(MethodSignature signature) {
         var parameterNameParts = signature.getParameterTypes().stream()
-            .map(Type::getName)
+            .map(type -> type instanceof ClassSymbol ? ((ClassSymbol) type).getFullyQualifiedName() : type.getName())
             .collect(Collectors.toList());
 
         return ListUtils.union(List.of(signature.getMethodName()), parameterNameParts);

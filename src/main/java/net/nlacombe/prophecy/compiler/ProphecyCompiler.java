@@ -3,7 +3,7 @@ package net.nlacombe.prophecy.compiler;
 import net.nlacombe.prophecy.analyser.symboltable.SymbolTableBuilderV2;
 import net.nlacombe.prophecy.analyser.type.TypeAnalyserV2;
 import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
-import net.nlacombe.prophecy.generator.LlvmGenerator;
+import net.nlacombe.prophecy.generator.SymbolLlvmGenerator;
 import net.nlacombe.prophecy.parser.ProphecyAstBuilder;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 
@@ -40,7 +40,7 @@ public class ProphecyCompiler {
             if (buildMessageService.hasErrorBuildMessage())
                 throw new ProphecyCompilationErrorsException("Error(s) found while compiling aborting.", buildMessageService.getBuildMessages());
 
-            new LlvmGenerator().generate(outputStreamWriter, globalScope);
+            new SymbolLlvmGenerator().generate(outputStreamWriter, globalScope);
 
             return new ProphecyCompilationResult(astRoot, globalScope);
         } catch (IOException e) {
