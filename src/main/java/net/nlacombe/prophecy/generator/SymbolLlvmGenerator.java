@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class LlvmGenerator {
+public class SymbolLlvmGenerator {
 
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
     private static final ProphecySpecialTypeSymbols prophecySpecialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
@@ -103,7 +103,8 @@ public class LlvmGenerator {
     private List<MethodSignature> getSpecialInlineMethodSignatures() {
         return List.of(
             prophecySpecialTypeSymbols.getUInt8ArrayGetMethodSignature(),
-            prophecySpecialTypeSymbols.getUInt8ArraySizeMethodSignature()
+            prophecySpecialTypeSymbols.getUInt8ArraySizeMethodSignature(),
+            prophecySpecialTypeSymbols.getArrayRangeMethodSignature()
         );
     }
 
@@ -129,9 +130,9 @@ public class LlvmGenerator {
         customLlvmCodeByMethodSignature.put(prophecySpecialTypeSymbols.getInternalArrayRangeMethodSignature(), """
             entry:
                 %0 = sub i8 %end, %start
-                %size = add i8 %0, 1
+                %size = add i8 %0, 2
                 %index = alloca i8
-                store i8 0, i8* %index
+                store i8 1, i8* %index
                 br label %for.cond
 
             for.cond:
@@ -141,7 +142,8 @@ public class LlvmGenerator {
 
             for.body:
                 %indexValue = load i8, i8* %index
-                %value = add i8 %indexValue, %start
+                %2 = sub i8 %indexValue, 1
+                %value = add i8 %2, %start
 
                 %arrayValuePointer = getelementptr i8, i8* %array, i8 %indexValue
                 store i8 %value, i8* %arrayValuePointer

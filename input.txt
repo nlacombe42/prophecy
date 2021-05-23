@@ -1,3 +1,7 @@
-val arr = [1, 42]
-val val = arr.get(1)
-System.println(val)
+val arr = Array.range(0, 4)
+System.println(arr.size())
+System.println(arr.get(0))
+System.println(arr.get(1))
+System.println(arr.get(2))
+System.println(arr.get(3))
+System.println(arr.get(4))

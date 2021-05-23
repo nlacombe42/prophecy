@@ -24,7 +24,7 @@ public class BootstrapTypeSymbols {
         objectClass = ClassSymbol.newFromClassDefinition("Object", null, null);
         voidClass = ClassSymbol.newFromClassDefinition("Void", objectClass, null);
         uInt8Class = ClassSymbol.newFromClassDefinition("UInt8", objectClass, null);
-        arrayClass = getArrayClassSymbol(objectClass, uInt8Class);
+        arrayClass = getArrayClassSymbol(voidClass, objectClass, uInt8Class);
         stringClass = ClassSymbol.newFromClassDefinition("String", objectClass, null);
         systemClass = getSystemClassSymbol(objectClass, voidClass, uInt8Class, stringClass);
     }
@@ -47,7 +47,7 @@ public class BootstrapTypeSymbols {
         );
     }
 
-    private ClassSymbol getArrayClassSymbol(ClassSymbol objectClass, ClassSymbol uInt8Class) {
+    private ClassSymbol getArrayClassSymbol(ClassSymbol voidClass, ClassSymbol objectClass, ClassSymbol uInt8Class) {
         var parameterType = new NamedParameterType("T");
         var arrayClass = ClassSymbol.newFromClassDefinition("Array", objectClass, null, List.of(parameterType));
 
@@ -56,6 +56,7 @@ public class BootstrapTypeSymbols {
 
         arrayClass.define(MethodSymbol.newClassMethod("size", uInt8Class, arrayClass, false, List.of()));
         arrayClass.define(getInternalUInt8ArrayRangeMethodSymbol(voidClass, arrayClass, uInt8Class));
+        arrayClass.define(getArrayRangeMethodSymbol(arrayClass, uInt8Class));
 
         return arrayClass;
     }
@@ -82,9 +83,7 @@ public class BootstrapTypeSymbols {
     }
 
     private MethodSymbol getInternalUInt8ArrayRangeMethodSymbol(ClassSymbol voidClass, ClassSymbol arrayClass, ClassSymbol uInt8Class) {
-        var parameterType = arrayClass.getParameterTypes().get(0);
-        var uInt8Array = arrayClass.substitute(Map.of(parameterType, uInt8Class));
-
+        var uInt8Array = getUInt8ArrayClass(arrayClass, uInt8Class);
         var parameters = List.of(
             new VariableSymbol("array", uInt8Array),
             new VariableSymbol("start", uInt8Class),
@@ -92,6 +91,22 @@ public class BootstrapTypeSymbols {
         );
 
         return MethodSymbol.newClassMethod("$range", voidClass, arrayClass, true, parameters);
+    }
+
+    private MethodSymbol getArrayRangeMethodSymbol(ClassSymbol arrayClass, ClassSymbol uInt8Class) {
+        var uInt8ArrayClass = getUInt8ArrayClass(arrayClass, uInt8Class);
+        var parameters = List.of(
+            new VariableSymbol("start", uInt8Class),
+            new VariableSymbol("end", uInt8Class)
+        );
+
+        return MethodSymbol.newClassMethod("range", uInt8ArrayClass, arrayClass, true, parameters);
+    }
+
+    private ClassSymbol getUInt8ArrayClass(ClassSymbol arrayClass, ClassSymbol uInt8Class) {
+        var parameterType = arrayClass.getParameterTypes().get(0);
+
+        return arrayClass.substitute(Map.of(parameterType, uInt8Class));
     }
 
     public ClassSymbol getVoidClass() {

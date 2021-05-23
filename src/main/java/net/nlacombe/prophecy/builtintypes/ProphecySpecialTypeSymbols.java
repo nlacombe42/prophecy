@@ -69,4 +69,10 @@ public class ProphecySpecialTypeSymbols {
 
         return (MethodSignature) methodSymbol.getSignature();
     }
+
+    public MethodSignature getArrayRangeMethodSignature() {
+        var methodSymbol = uInt8Array.resolve(new MethodSignature("range", List.of(uInt8Class, uInt8Class)));
+
+        return (MethodSignature) methodSymbol.getSignature();
+    }
 }

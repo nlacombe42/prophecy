@@ -61,4 +61,19 @@ public class UInt8ArrayIntegrationTest {
 
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
     }
+
+    @Test
+    public void test_array_range() {
+        var prophecyCode = """
+            val arr = Array.range(0, 4)
+            System.println(arr.size())
+            System.println(arr.get(0))
+            System.println(arr.get(1))
+            System.println(arr.get(2))
+            System.println(arr.get(3))
+            System.println(arr.get(4))
+            """;
+
+        TestUtil.testProphecyProgramOutput(prophecyCode, "5\n0\n1\n2\n3\n4\n");
+    }
 }

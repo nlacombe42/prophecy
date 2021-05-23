@@ -4,10 +4,14 @@ import net.nlacombe.prophecy.test.util.TestUtil;
 import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PrintlnStringIntegrationTest {
+
+    private static final Logger logger = LoggerFactory.getLogger(PrintlnStringIntegrationTest.class);
 
     @Test
     public void println_string_one_line() {
@@ -35,7 +39,11 @@ public class PrintlnStringIntegrationTest {
 
     @Test
     public void println_random_string() {
-        test_println_string_without_escape(getRandomStringNoEscapeSequenceOrInterpolation());
+        var randomString = getRandomStringNoEscapeSequenceOrInterpolation();
+
+        logger.info("random string: " + randomString);
+
+        test_println_string_without_escape(randomString);
     }
 
     private void test_println_string_without_escape(String expectedString) {
@@ -52,7 +60,7 @@ public class PrintlnStringIntegrationTest {
 
         do {
             randomString = RandomStringUtils.randomPrint(1, 20);
-        } while (randomString.contains("\\") || randomString.contains("${"));
+        } while (randomString.contains("\\") || randomString.contains("${") || randomString.contains("\""));
 
         return randomString;
     }
