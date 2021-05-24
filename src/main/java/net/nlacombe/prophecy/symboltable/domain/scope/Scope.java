@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy.symboltable.domain.scope;
 
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefinedException;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureShadowException;
 import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
@@ -17,9 +18,9 @@ public interface Scope {
     List<Scope> getChildrenScopes();
 
     /**
-     * @throws SymbolSignatureAlreadyDefined
+     * @throws SymbolSignatureAlreadyDefinedException, SymbolSignatureShadowException
      */
-    void define(Symbol symbol);
+    void define(Symbol symbol) throws SymbolSignatureAlreadyDefinedException, SymbolSignatureShadowException;
 
     /**
      * @return null if not found

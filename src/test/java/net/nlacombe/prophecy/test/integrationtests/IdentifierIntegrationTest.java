@@ -33,7 +33,7 @@ public class IdentifierIntegrationTest {
     }
 
     @Test
-    public void println_identifer_selection_expression_call_return_correct_value() {
+    public void println_identifier_selection_expression_call_return_correct_value() {
         var expectedRandomUInt8 = new Random().nextInt(256);
         var firstRandomUInt8 = new Random().nextInt(256);
         var thirdRandomUInt8 = new Random().nextInt(256);
@@ -46,5 +46,16 @@ public class IdentifierIntegrationTest {
             .replace("$thirdRandomUInt8", "" + thirdRandomUInt8);
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "" + expectedRandomUInt8 + "\n");
+    }
+
+    @Test
+    public void throw_error_when_an_identifier_shadows_another_one() {
+        var prophecyCode = """
+            val element = "element"
+            foreach element in [1]
+                System.println(element)
+            """;
+
+        assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
     }
 }

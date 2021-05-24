@@ -71,9 +71,8 @@ public class UInt8ArrayIntegrationTest {
             System.println(arr.get(1))
             System.println(arr.get(2))
             System.println(arr.get(3))
-            System.println(arr.get(4))
             """;
 
-        TestUtil.testProphecyProgramOutput(prophecyCode, "5\n0\n1\n2\n3\n4\n");
+        TestUtil.testProphecyProgramOutput(prophecyCode, "4\n0\n1\n2\n3\n");
     }
 }

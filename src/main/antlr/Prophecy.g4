@@ -25,13 +25,18 @@ file: statement+;
 statement
     : call NEWLINE
     | variableDeclaration NEWLINE
+    | foreach
     ;
 
 call: expression '.' methodName=nonTypeIdentifier '(' arguments=expressionList? ')';
 
-expressionList: expression (', ' expression)*;
-
 variableDeclaration: 'val' ' ' variableName=nonTypeIdentifier ' = ' initializer=expression;
+
+foreach: 'foreach' ' ' variableName=nonTypeIdentifier ' ' 'in' ' ' expression statementBlock;
+
+statementBlock: INDENT statement+ DEDENT;
+
+expressionList: expression (', ' expression)*;
 
 expression
     : literal #literalExpression
@@ -45,7 +50,7 @@ literal
     | '[' expressionList ']' #arrayLiteral
     ;
 
-nonTypeIdentifier: NON_TYPE_IDENTIFIER | 'val';
+nonTypeIdentifier: NON_TYPE_IDENTIFIER | 'val' | 'foreach' | 'in';
 anyTypeIdentifier: TYPE_IDENTIFIER | nonTypeIdentifier;
 
 INTEGER_LITERAL: [0-9]+;

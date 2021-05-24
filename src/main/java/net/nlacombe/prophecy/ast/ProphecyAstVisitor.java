@@ -4,6 +4,7 @@ import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyVariableDeclarationAstNode;
 import net.nlacombe.prophecy.util.AbstractVisitor;
@@ -45,6 +46,7 @@ public abstract class ProphecyAstVisitor<ResultType> extends AbstractVisitor<Pro
         handlersMap.put(ProphecyArrayLiteralAstNode.class, node -> visitArrayLiteralAstNode((ProphecyArrayLiteralAstNode) node));
         handlersMap.put(ProphecyVariableDeclarationAstNode.class, node -> visitVariableDeclarationAstNode((ProphecyVariableDeclarationAstNode) node));
         handlersMap.put(ProphecyIdentifierExpressionAstNode.class, node -> visitProphecyIdentifierExpressionAstNode((ProphecyIdentifierExpressionAstNode) node));
+        handlersMap.put(ProphecyForeachAstNode.class, node -> visitProphecyForeachAstNode((ProphecyForeachAstNode) node));
 
         return handlersMap;
     }
@@ -69,6 +71,10 @@ public abstract class ProphecyAstVisitor<ResultType> extends AbstractVisitor<Pro
     }
 
     protected ResultType visitProphecyIdentifierExpressionAstNode(ProphecyIdentifierExpressionAstNode node) {
+        return visitChildren(node);
+    }
+
+    protected ResultType visitProphecyForeachAstNode(ProphecyForeachAstNode node) {
         return visitChildren(node);
     }
 }

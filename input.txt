@@ -1,7 +1,14 @@
-val arr = Array.range(0, 4)
-System.println(arr.size())
-System.println(arr.get(0))
-System.println(arr.get(1))
-System.println(arr.get(2))
-System.println(arr.get(3))
-System.println(arr.get(4))
+val val = [1, 2, 3]
+
+System.println(val.size())
+System.println(val.get(1))
+
+foreach i1 in val
+    System.println("outer loop start")
+
+    foreach i2 in [11, 22]
+        System.println(i1)
+        System.println(i2)
+        System.println("inner loop")
+
+    System.println("outer loop end")

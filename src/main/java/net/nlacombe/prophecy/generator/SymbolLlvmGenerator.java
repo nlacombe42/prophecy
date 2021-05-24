@@ -54,11 +54,13 @@ public class SymbolLlvmGenerator {
             } else {
                 var methodAstNode = methodSymbol.getDefinitionAstNode();
                 var fileAstNode = (ProphecyFileAstNode) methodAstNode;
-                var llvmTemporaryNameGenerator = new LlvmTemporaryNameGenerator();
+                var llvmTemporaryNameGenerator = new LlvmContext();
 
                 try (var stringWriter = new StringWriter()) {
+                    stringWriter.write("entry:\n");
+
                     fileAstNode.getStatements().forEach(statementAstNode -> {
-                        stringWriter.write("; " + statementAstNode.toString() + "\n");
+                        stringWriter.write("; " + statementAstNode.toString().replaceAll("\n", "; ") + "\n");
                         stringWriter.write("; start of statement\n");
                         AstLlvmGenerator.generate(stringWriter, llvmTemporaryNameGenerator, statementAstNode);
                         stringWriter.write("; end of statement\n\n");
@@ -130,7 +132,7 @@ public class SymbolLlvmGenerator {
         customLlvmCodeByMethodSignature.put(prophecySpecialTypeSymbols.getInternalArrayRangeMethodSignature(), """
             entry:
                 %0 = sub i8 %end, %start
-                %size = add i8 %0, 2
+                %size = add i8 %0, 1
                 %index = alloca i8
                 store i8 1, i8* %index
                 br label %for.cond

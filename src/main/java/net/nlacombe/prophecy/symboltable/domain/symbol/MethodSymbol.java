@@ -2,14 +2,12 @@ package net.nlacombe.prophecy.symboltable.domain.symbol;
 
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.symboltable.domain.NamedParameterType;
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
 import net.nlacombe.prophecy.symboltable.domain.scope.GlobalScope;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.LocalScope;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
-import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

@@ -5,14 +5,18 @@ import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyVariableDeclarationAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
+import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
+import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
+import net.nlacombe.prophecy.symboltable.domain.symbol.VariableSymbol;
 
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +25,7 @@ import java.util.stream.Collectors;
 public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
 
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
+    private static final ProphecySpecialTypeSymbols specialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
     private static final ClassSymbol voidClass = bootstrapTypeSymbols.getVoidClass();
 
     private final BuildMessageService buildMessageService;
@@ -37,15 +42,23 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
             .map(ProphecyExpressionAstNode::getEvaluatedType)
             .collect(Collectors.toList());
 
-        if (parameterTypes.stream().anyMatch(Objects::isNull))
-            return null;
+        if (parameterTypes.stream().anyMatch(Objects::isNull)) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
 
         var methodSignature = new MethodSignature(node.getMethodName(), parameterTypes);
         var expressionNode = node.getExpression();
         var expressionType = expressionNode.getEvaluatedType();
 
-        if (expressionType == null)
-            return null;
+        if (expressionType == null) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
 
         if (!(expressionType instanceof ClassSymbol)) {
             var sourceCodeLocation = node.getDefinitionSourceCodeLocation();
@@ -77,7 +90,7 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         var methodSymbol = (MethodSymbol) symbol;
 
         if (!methodSymbol.isStatic() && expressionNode instanceof ProphecyIdentifierExpressionAstNode) {
-            var identifierNode = ((ProphecyIdentifierExpressionAstNode)expressionNode);
+            var identifierNode = ((ProphecyIdentifierExpressionAstNode) expressionNode);
 
             if (identifierNode.getSymbol() instanceof ClassSymbol) {
                 var sourceCodeLocation = node.getDefinitionSourceCodeLocation();
@@ -128,7 +141,7 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
 
         node.setArrayType(substitutedArrayClass);
 
-        return arrayClass;
+        return substitutedArrayClass;
     }
 
     @Override
@@ -138,8 +151,12 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         var initializerNode = node.getInitializer();
         var initializerType = initializerNode.getEvaluatedType();
 
-        if (initializerType == null)
-            return null;
+        if (initializerType == null) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
 
         if (initializerType.equals(voidClass)) {
             buildMessageService.error(initializerNode.getDefinitionSourceCodeLocation(), "'val' variable declaration cannot have an initializer of type Void");
@@ -147,8 +164,12 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
             return null;
         }
 
-        if (node.getVariableSymbol() == null)
-            return null;
+        if (node.getVariableSymbol() == null) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
 
         node.getVariableSymbol().setType(initializerType);
 
@@ -156,8 +177,46 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
     }
 
     @Override
-    protected Type defaultForNonImplementedNodeTypes(ProphecyAstNode node) {
+    protected Type visitProphecyForeachAstNode(ProphecyForeachAstNode node) {
+        visit(node.getExpression());
+
+        var expressionType = node.getExpression().getEvaluatedType();
+
+        if (expressionType == null) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
+
+        if (!Type.sameType(expressionType, specialTypeSymbols.getUInt8Array())) {
+            buildMessageService.error(node.getExpression().getDefinitionSourceCodeLocation(), "only Array<UInt8> expression are implemented for foreach expressions: " + expressionType);
+
+            return null;
+        }
+
+        var expressionClass = (ClassSymbol) expressionType;
+        var arrayElementType = expressionClass.getSubstitutedParameterTypes().get(0);
+
+        var variableSymbol = node.getVariableSymbol();
+
+        if (variableSymbol == null) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
+
+        variableSymbol.setType(arrayElementType);
+
+        visitNodes(node.getBlock());
+
         return null;
+    }
+
+    @Override
+    protected Type defaultForNonImplementedNodeTypes(ProphecyAstNode node) {
+        return node instanceof ProphecyExpressionAstNode ? ((ProphecyExpressionAstNode) node).getEvaluatedType() : null;
     }
 
 }

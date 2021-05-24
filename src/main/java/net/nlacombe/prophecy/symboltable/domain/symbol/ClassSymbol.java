@@ -2,7 +2,8 @@ package net.nlacombe.prophecy.symboltable.domain.symbol;
 
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.symboltable.domain.NamedParameterType;
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefinedException;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureShadowException;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.scope.Scope;
 import net.nlacombe.prophecy.symboltable.domain.signature.NameOnlySymbolSignature;
@@ -121,7 +122,12 @@ public class ClassSymbol extends Symbol implements Scope, Type {
         var alreadyDefinedSymbol = members.get(symbol.getSignature());
 
         if (alreadyDefinedSymbol != null)
-            throw new SymbolSignatureAlreadyDefined(alreadyDefinedSymbol);
+            throw new SymbolSignatureAlreadyDefinedException(alreadyDefinedSymbol);
+
+        var shadowedSymbol = resolve(symbol.getSignature());
+
+        if (shadowedSymbol != null)
+            throw new SymbolSignatureShadowException(shadowedSymbol);
 
         members.put(symbol.getSignature(), symbol);
     }

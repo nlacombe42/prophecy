@@ -14,7 +14,7 @@ public class LlvmGeneratorCallUtil {
 
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
 
-    public static LlvmSymbol generateCallToProphecyMethod(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, MethodSymbol methodSymbol, List<LlvmSymbol> arguments) {
+    public static LlvmSymbol generateCallToProphecyMethod(Writer writer, LlvmContext llvmContext, MethodSymbol methodSymbol, List<LlvmSymbol> arguments) {
         var parameterLlvmTypes = methodSymbol.getParameters().stream()
             .map(Symbol::getType)
             .map(LlvmGeneratorUtil::getLlvmType)
@@ -34,7 +34,7 @@ public class LlvmGeneratorCallUtil {
         if (Type.sameType(methodSymbol.getType(), bootstrapTypeSymbols.getVoidClass()))
             returnLlvmSymbol = null;
         else {
-            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            var returnValueName = llvmContext.getNewTemporaryLlvmName();
 
             llvmCode = returnValueName + " = " + llvmCode;
             returnLlvmSymbol = new LlvmSymbol(LlvmGeneratorUtil.getLlvmType(methodSymbol.getType()), returnValueName);

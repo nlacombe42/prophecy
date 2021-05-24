@@ -1,6 +1,7 @@
 package net.nlacombe.prophecy.symboltable.domain.scope;
 
-import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefined;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureAlreadyDefinedException;
+import net.nlacombe.prophecy.symboltable.domain.SymbolSignatureShadowException;
 import net.nlacombe.prophecy.symboltable.domain.signature.SymbolSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 
@@ -9,7 +10,6 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public abstract class AbstractScope implements Scope {
 
@@ -55,7 +55,12 @@ public abstract class AbstractScope implements Scope {
         var previouslyDefined = symbols.get(symbol.getSignature());
 
         if (previouslyDefined != null)
-            throw new SymbolSignatureAlreadyDefined(previouslyDefined);
+            throw new SymbolSignatureAlreadyDefinedException(previouslyDefined);
+
+        var shadowedSymbol = resolve(symbol.getSignature());
+
+        if (shadowedSymbol != null)
+            throw new SymbolSignatureShadowException(shadowedSymbol);
 
         symbols.put(symbol.getSignature(), symbol);
         symbol.setScope(this);

@@ -5,6 +5,7 @@ import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIntegerLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyStringLiteralAstNode;
@@ -125,6 +126,16 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
         var initializerExpression = getOneExpressionNode(initializerNode);
 
         return List.of(new ProphecyVariableDeclarationAstNode(sourceCodeLocation, variableDeclarationContext.variableName.getText(), initializerExpression));
+    }
+
+    @Override
+    public List<ProphecyAstNode> visitForeach(ProphecyParser.ForeachContext foreachContext) {
+        var sourceCodeLocation = getSourceCodeLocation(foreachContext);
+
+        var expression = getOneExpressionNode(visit(foreachContext.expression()));
+        var blockNodes = visit(foreachContext.statementBlock());
+
+        return List.of(new ProphecyForeachAstNode(sourceCodeLocation, foreachContext.variableName.getText(), expression, blockNodes));
     }
 
     @Override

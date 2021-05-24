@@ -4,6 +4,7 @@ import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyIntegerLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyStringLiteralAstNode;
@@ -14,6 +15,7 @@ import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.util.WriterUtil;
 import org.apache.commons.collections4.ListUtils;
 
 import java.io.IOException;
@@ -30,16 +32,17 @@ public class AstLlvmGenerator {
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
     private static final ProphecySpecialTypeSymbols specialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
 
-    public static void generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyAstNode astNode) {
+    public static void generate(Writer writer, LlvmContext llvmContext, ProphecyAstNode astNode) {
         var astNodeClass = astNode.getClass();
 
         if (ProphecyExpressionAstNode.class.isAssignableFrom(astNodeClass)) {
-            AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyExpressionAstNode) astNode);
+            AstLlvmGenerator.generate(writer, llvmContext, (ProphecyExpressionAstNode) astNode);
             return;
         }
 
         var generatorsByAstNodeType = new HashMap<Class<? extends ProphecyAstNode>, Consumer<ProphecyAstNode>>();
-        generatorsByAstNodeType.put(ProphecyVariableDeclarationAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyVariableDeclarationAstNode) node));
+        generatorsByAstNodeType.put(ProphecyVariableDeclarationAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyVariableDeclarationAstNode) node));
+        generatorsByAstNodeType.put(ProphecyForeachAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyForeachAstNode) node));
 
         var generator = generatorsByAstNodeType.get(astNodeClass);
 
@@ -49,14 +52,14 @@ public class AstLlvmGenerator {
         generator.accept(astNode);
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyExpressionAstNode astNode) {
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyExpressionAstNode astNode) {
         var astNodeClass = astNode.getClass();
         var generatorsByAstNodeType = new HashMap<Class<? extends ProphecyAstNode>, Function<ProphecyExpressionAstNode, LlvmSymbol>>();
-        generatorsByAstNodeType.put(ProphecyCallAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyCallAstNode) node));
-        generatorsByAstNodeType.put(ProphecyIntegerLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyIntegerLiteralAstNode) node));
-        generatorsByAstNodeType.put(ProphecyStringLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyStringLiteralAstNode) node));
-        generatorsByAstNodeType.put(ProphecyArrayLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyArrayLiteralAstNode) node));
-        generatorsByAstNodeType.put(ProphecyIdentifierExpressionAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, (ProphecyIdentifierExpressionAstNode) node));
+        generatorsByAstNodeType.put(ProphecyCallAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyCallAstNode) node));
+        generatorsByAstNodeType.put(ProphecyIntegerLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyIntegerLiteralAstNode) node));
+        generatorsByAstNodeType.put(ProphecyStringLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyStringLiteralAstNode) node));
+        generatorsByAstNodeType.put(ProphecyArrayLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyArrayLiteralAstNode) node));
+        generatorsByAstNodeType.put(ProphecyIdentifierExpressionAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyIdentifierExpressionAstNode) node));
 
         var generator = generatorsByAstNodeType.get(astNodeClass);
 
@@ -66,24 +69,90 @@ public class AstLlvmGenerator {
         return generator.apply(astNode);
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyIdentifierExpressionAstNode astNode) {
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyIdentifierExpressionAstNode astNode) {
         var llvmType = LlvmGeneratorUtil.getLlvmReferenceFromType(astNode.getEvaluatedType());
 
         return new LlvmSymbol(llvmType, LlvmGeneratorUtil.getLlvmVariableName(astNode.getSymbol().getName()));
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyVariableDeclarationAstNode astNode) {
-        var initializerLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, astNode.getInitializer());
-        var pointer = LlvmGeneratorPointerUtil.getPointer(writer, llvmTemporaryNameGenerator, initializerLlvmSymbol);
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyVariableDeclarationAstNode astNode) {
+        var initializerLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, astNode.getInitializer());
+        var pointer = LlvmGeneratorPointerUtil.getPointer(writer, llvmContext, initializerLlvmSymbol);
         var llvmVariableName = LlvmGeneratorUtil.getLlvmVariableName(astNode.getVariableName());
 
-        return LlvmGeneratorPointerUtil.wrap(writer, llvmTemporaryNameGenerator, pointer, llvmVariableName);
+        return LlvmGeneratorPointerUtil.wrap(writer, llvmContext, pointer, llvmVariableName);
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyIntegerLiteralAstNode astNode) {
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyForeachAstNode astNode) {
+        var expressionLlvmSymbol = generate(writer, llvmContext, astNode.getExpression());
+        var arrayPointer = LlvmGeneratorPointerUtil.getPointer(writer, llvmContext, expressionLlvmSymbol);
+        var arraySizeLlvmSymbol = ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmContext, arrayPointer);
+
+        var lastIndex = llvmContext.getNewTemporaryLlvmName();
+        var indexName = llvmContext.getNewTemporaryLlvmName();
+        var indexValue1 = llvmContext.getNewTemporaryLlvmName();
+        var conditionBoolean = llvmContext.getNewTemporaryLlvmName();
+        var indexValue2 = llvmContext.getNewTemporaryLlvmName();
+        var arrayValuePointer = llvmContext.getNewTemporaryLlvmName();
+        var foreachName = llvmContext.getNewForeachName();
+
+        var llvmCodePart1 = """
+            ; $foreachName start
+            $lastIndex = add i8 $arraySize, 1
+            $indexName = alloca i8
+            store i8 1, i8* $indexName
+            br label %$foreachName.cond
+
+            $foreachName.cond:
+            $indexValue1 = load i8, i8* $indexName
+            $conditionBoolean = icmp ult i8 $indexValue1, $lastIndex
+            br i1 $conditionBoolean, label %$foreachName.body, label %$foreachName.end
+
+            $foreachName.body:
+            $indexValue2 = load i8, i8* $indexName
+            $arrayValuePointer = getelementptr i8, i8* $arrayName, i8 $indexValue2
+            """
+            .replace("$lastIndex", lastIndex)
+            .replace("$indexName", indexName)
+            .replace("$arraySize", arraySizeLlvmSymbol.getName())
+            .replace("$foreachName", foreachName)
+            .replace("$indexValue1", indexValue1)
+            .replace("$conditionBoolean", conditionBoolean)
+            .replace("$indexValue2", indexValue2)
+            .replace("$arrayName", arrayPointer.getName())
+            .replace("$arrayValuePointer", arrayValuePointer)
+            ;
+
+        WriterUtil.writeRuntimeException(writer, llvmCodePart1);
+        LlvmGeneratorPointerUtil.wrap(writer, llvmContext, new LlvmSymbol("i8*", arrayValuePointer), LlvmGeneratorUtil.getLlvmVariableName(astNode.getVariableName()));
+        WriterUtil.writeRuntimeException(writer, "; end of $foreachName part 1\n".replace("$foreachName", foreachName));
+
+        astNode.getBlock().forEach(node -> generate(writer, llvmContext, node));
+
+        var llvmCodePart2 = """
+            ; start of $foreachName part 2
+            $newIndexValue = add i8 $indexValue2, 1
+            store i8 $newIndexValue, i8* $indexName
+            br label %$foreachName.cond
+
+            $foreachName.end:
+            ; $foreachName end
+            """
+            .replace("$indexName", indexName)
+            .replace("$foreachName", foreachName)
+            .replace("$indexValue2", indexValue2)
+            .replace("$newIndexValue", llvmContext.getNewTemporaryLlvmName())
+            ;
+
+        WriterUtil.writeRuntimeException(writer, llvmCodePart2);
+
+        return null;
+    }
+
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyIntegerLiteralAstNode astNode) {
         try {
             var llvmType = LlvmGeneratorUtil.getLlvmType(astNode.getEvaluatedType());
-            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            var returnValueName = llvmContext.getNewTemporaryLlvmName();
             var intLitValue = astNode.getLiteralValue();
 
             var llvmCode = "$returnValueName = add $llvmType 0, $intLitValue ; int lit ast node\n"
@@ -99,11 +168,11 @@ public class AstLlvmGenerator {
         }
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyStringLiteralAstNode astNode) {
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyStringLiteralAstNode astNode) {
         try {
             var llvmType = LlvmGeneratorUtil.getLlvmType(astNode.getEvaluatedType());
-            var allocTempName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            var allocTempName = llvmContext.getNewTemporaryLlvmName();
+            var returnValueName = llvmContext.getNewTemporaryLlvmName();
             var llvmStringLiteral = LlvmGeneratorUtil.toLlvmStringLiteral(astNode.getStringValue());
             var stringLength = astNode.getStringValue().length() + 1;
 
@@ -125,7 +194,7 @@ public class AstLlvmGenerator {
         }
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyCallAstNode astNode) {
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyCallAstNode astNode) {
         var expression = astNode.getExpression();
         var expressionType = expression.getEvaluatedType();
         var methodSymbol = astNode.getMethodSymbol();
@@ -133,30 +202,30 @@ public class AstLlvmGenerator {
         var arguments = astNode.getArguments();
 
         if (Type.sameType(expressionType, specialTypeSymbols.getUInt8Array())) {
-            var arrayLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, expression);
-            var arrayPointerLlvmSymbol = LlvmGeneratorPointerUtil.getPointer(writer, llvmTemporaryNameGenerator, arrayLlvmSymbol);
+            var arrayLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, expression);
+            var arrayPointerLlvmSymbol = LlvmGeneratorPointerUtil.getPointer(writer, llvmContext, arrayLlvmSymbol);
 
             if (specialTypeSymbols.getUInt8ArrayGetMethodSignature().equals(methodSignature)) {
-                var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, arguments.get(0));
+                var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, arguments.get(0));
 
-                return ArrayLlvmGenerator.generateUInt8ArrayGet(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol, indexLlvmSymbol);
+                return ArrayLlvmGenerator.generateUInt8ArrayGet(writer, llvmContext, arrayPointerLlvmSymbol, indexLlvmSymbol);
             } else if (specialTypeSymbols.getUInt8ArraySizeMethodSignature().equals(methodSignature))
-                return ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmTemporaryNameGenerator, arrayPointerLlvmSymbol);
+                return ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmContext, arrayPointerLlvmSymbol);
             else
                 throw new ProphecyCompilerException("llvm generator has no implementation for this Array<UInt8> method: " + methodSignature);
         } else if (Type.sameType(expressionType, bootstrapTypeSymbols.getArrayClass())) {
             if (specialTypeSymbols.getArrayRangeMethodSignature().equals(methodSignature)) {
-                var startLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, arguments.get(0));
-                var endLlvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, arguments.get(1));
+                var startLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, arguments.get(0));
+                var endLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, arguments.get(1));
 
-                return ArrayLlvmGenerator.generateArrayRange(writer, llvmTemporaryNameGenerator, startLlvmSymbol, endLlvmSymbol);
+                return ArrayLlvmGenerator.generateArrayRange(writer, llvmContext, startLlvmSymbol, endLlvmSymbol);
             } else
                 throw new ProphecyCompilerException("llvm generator has no implementation for this Array<T> method: " + methodSignature);
         } else
-            return generateCall(writer, llvmTemporaryNameGenerator, methodSymbol, arguments);
+            return generateCall(writer, llvmContext, methodSymbol, arguments);
     }
 
-    private static LlvmSymbol generateCall(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, MethodSymbol methodSymbol, List<ProphecyExpressionAstNode> arguments) {
+    private static LlvmSymbol generateCall(Writer writer, LlvmContext llvmContext, MethodSymbol methodSymbol, List<ProphecyExpressionAstNode> arguments) {
         var parameterLlvmTypes = methodSymbol.getParameters().stream()
             .map(Symbol::getType)
             .map(LlvmGeneratorUtil::getLlvmType)
@@ -165,16 +234,16 @@ public class AstLlvmGenerator {
             .mapToObj(i -> {
                 var argument = arguments.get(i);
                 var parameterLlvmType = parameterLlvmTypes.get(i);
-                var llvmSymbol = AstLlvmGenerator.generate(writer, llvmTemporaryNameGenerator, argument);
+                var llvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, argument);
 
-                return LlvmGeneratorPointerUtil.convert(writer, llvmTemporaryNameGenerator, llvmSymbol, parameterLlvmType);
+                return LlvmGeneratorPointerUtil.convert(writer, llvmContext, llvmSymbol, parameterLlvmType);
             })
             .collect(Collectors.toList());
 
-        return LlvmGeneratorCallUtil.generateCallToProphecyMethod(writer, llvmTemporaryNameGenerator, methodSymbol, llvmArguments);
+        return LlvmGeneratorCallUtil.generateCallToProphecyMethod(writer, llvmContext, methodSymbol, llvmArguments);
     }
 
-    private static LlvmSymbol generate(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, ProphecyArrayLiteralAstNode astNode) {
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyArrayLiteralAstNode astNode) {
         var arrayType = astNode.getArrayType();
         var uInt8Class = bootstrapTypeSymbols.getUInt8Class();
 
@@ -188,8 +257,8 @@ public class AstLlvmGenerator {
 
         try {
             var llvmType = LlvmGeneratorUtil.getLlvmType(specialTypeSymbols.getUInt8Array());
-            var allocTempName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-            var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+            var allocTempName = llvmContext.getNewTemporaryLlvmName();
+            var returnValueName = llvmContext.getNewTemporaryLlvmName();
             var llvmStringLiteral = LlvmGeneratorUtil.toLlvmStringLiteral(ListUtils.union(List.of(numberOfElementsInArray), getArrayUInt8Elements(astNode)));
 
             var llvmCode = """

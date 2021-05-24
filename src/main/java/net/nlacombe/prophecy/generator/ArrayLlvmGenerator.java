@@ -2,11 +2,8 @@ package net.nlacombe.prophecy.generator;
 
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
-import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
-import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
 import net.nlacombe.prophecy.util.WriterUtil;
-import org.apache.commons.collections4.ListUtils;
 
 import java.io.Writer;
 import java.util.List;
@@ -16,11 +13,11 @@ public class ArrayLlvmGenerator {
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
     private static final ProphecySpecialTypeSymbols specialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
 
-    public static LlvmSymbol generateUInt8ArrayGet(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, LlvmSymbol arrayPointerLlvmSymbol, LlvmSymbol indexLlvmSymbol) {
+    public static LlvmSymbol generateUInt8ArrayGet(Writer writer, LlvmContext llvmContext, LlvmSymbol arrayPointerLlvmSymbol, LlvmSymbol indexLlvmSymbol) {
         var llvmType = LlvmGeneratorUtil.getLlvmType(bootstrapTypeSymbols.getUInt8Class());
-        var indexOffsetName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-        var indexPointerName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-        var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+        var indexOffsetName = llvmContext.getNewTemporaryLlvmName();
+        var indexPointerName = llvmContext.getNewTemporaryLlvmName();
+        var returnValueName = llvmContext.getNewTemporaryLlvmName();
 
         var llvmCode = """
             $indexOffsetName = add i8 $indexName, 1 ; get value from UInt8 array start
@@ -38,10 +35,10 @@ public class ArrayLlvmGenerator {
         return new LlvmSymbol(llvmType, returnValueName);
     }
 
-    public static LlvmSymbol generateUInt8ArraySize(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, LlvmSymbol arrayPointerLlvmSymbol) {
+    public static LlvmSymbol generateUInt8ArraySize(Writer writer, LlvmContext llvmContext, LlvmSymbol arrayPointerLlvmSymbol) {
         var llvmType = LlvmGeneratorUtil.getLlvmType(bootstrapTypeSymbols.getUInt8Class());
-        var indexPointerName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-        var returnValueName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+        var indexPointerName = llvmContext.getNewTemporaryLlvmName();
+        var returnValueName = llvmContext.getNewTemporaryLlvmName();
 
         var llvmCode = """
             $indexPointerName = getelementptr i8, i8* $arrayPointerName, i8 0 ; get size from UInt8 array start
@@ -56,18 +53,18 @@ public class ArrayLlvmGenerator {
         return new LlvmSymbol(llvmType, returnValueName);
     }
 
-    public static LlvmSymbol generateArrayRange(Writer writer, LlvmTemporaryNameGenerator llvmTemporaryNameGenerator, LlvmSymbol startLlvmSymbol, LlvmSymbol endLlvmSymbol) {
-        var subTmpName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-        var allocSizeTmpName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
-        var arraySizeTmpName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+    public static LlvmSymbol generateArrayRange(Writer writer, LlvmContext llvmContext, LlvmSymbol startLlvmSymbol, LlvmSymbol endLlvmSymbol) {
+        var subTmpName = llvmContext.getNewTemporaryLlvmName();
+        var allocSizeTmpName = llvmContext.getNewTemporaryLlvmName();
+        var arraySizeTmpName = llvmContext.getNewTemporaryLlvmName();
         var arrayLlvmType = LlvmGeneratorUtil.getLlvmType(specialTypeSymbols.getUInt8Array());
-        var arrayLlvmName = llvmTemporaryNameGenerator.getNewTemporaryLlvmName();
+        var arrayLlvmName = llvmContext.getNewTemporaryLlvmName();
         var arrayLlvmSymbol = new LlvmSymbol(arrayLlvmType, arrayLlvmName);
 
 
         var llvmCode = """
             $subTmpName = sub i8 $endLlvmName, $startLlvmName ; Array.range() start
-            $allocSizeTmpName = add i8 $subTmpName, 2
+            $allocSizeTmpName = add i8 $subTmpName, 1
             $arraySizeTmpName = sub i8 $allocSizeTmpName, 1
             $arrayTmpName = alloca i8, i8 $allocSizeTmpName
             store i8 $arraySizeTmpName, i8* $arrayTmpName ; Array.range() ends after next call
@@ -86,7 +83,7 @@ public class ArrayLlvmGenerator {
         var internalArrayRangeMethodSymbol = (MethodSymbol) bootstrapTypeSymbols.getArrayClass().resolve(internalArrayRangeMethodSignature);
         var arguments = List.of(arrayLlvmSymbol, startLlvmSymbol, endLlvmSymbol);
 
-        LlvmGeneratorCallUtil.generateCallToProphecyMethod(writer, llvmTemporaryNameGenerator, internalArrayRangeMethodSymbol, arguments);
+        LlvmGeneratorCallUtil.generateCallToProphecyMethod(writer, llvmContext, internalArrayRangeMethodSymbol, arguments);
 
         return new LlvmSymbol(arrayLlvmType, arrayLlvmName);
     }

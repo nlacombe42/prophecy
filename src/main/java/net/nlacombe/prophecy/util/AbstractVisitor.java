@@ -1,11 +1,16 @@
 package net.nlacombe.prophecy.util;
 
+import java.util.Collection;
 import java.util.List;
 
 public abstract class AbstractVisitor<NodeType, ResultType> {
 
     public ResultType visitChildren(NodeType node) {
-        return getChildren(node).stream()
+        return visitNodes(getChildren(node));
+    }
+
+    public ResultType visitNodes(Collection<NodeType> nodes) {
+        return nodes.stream()
             .map(this::visit)
             .reduce(defaultResult(), this::aggregate);
     }
