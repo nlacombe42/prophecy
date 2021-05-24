@@ -98,4 +98,16 @@ public class ForeachIntegrationTest {
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "f1 start\n1\n11\n\n1\n22\n\nf1 end\nf1 start\n2\n11\n\n2\n22\n\nf1 end\n");
     }
+
+    @Test
+    public void prints_content_of_array_correctly_using_range_to_generate_indexes() {
+        var prophecyCode = """
+            val array = [11, 22, 33, 44, 55]
+
+            foreach i in Array.range(0, array.size())
+                System.println(array.get(i))
+            """;
+
+        TestUtil.testProphecyProgramOutput(prophecyCode, "11\n22\n33\n44\n55\n");
+    }
 }

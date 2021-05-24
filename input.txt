@@ -1,14 +1,4 @@
-val val = [1, 2, 3]
+val array = [11, 22, 33, 44, 55]
 
-System.println(val.size())
-System.println(val.get(1))
-
-foreach i1 in val
-    System.println("outer loop start")
-
-    foreach i2 in [11, 22]
-        System.println(i1)
-        System.println(i2)
-        System.println("inner loop")
-
-    System.println("outer loop end")
+foreach i in Array.range(0, array.size())
+    System.println(array.get(i))

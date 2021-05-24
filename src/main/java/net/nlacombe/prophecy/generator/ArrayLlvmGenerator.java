@@ -13,7 +13,8 @@ public class ArrayLlvmGenerator {
     private static final BootstrapTypeSymbols bootstrapTypeSymbols = BootstrapTypeSymbols.getInstance();
     private static final ProphecySpecialTypeSymbols specialTypeSymbols = ProphecySpecialTypeSymbols.getInstance();
 
-    public static LlvmSymbol generateUInt8ArrayGet(Writer writer, LlvmContext llvmContext, LlvmSymbol arrayPointerLlvmSymbol, LlvmSymbol indexLlvmSymbol) {
+    public static LlvmSymbol generateUInt8ArrayGet(Writer writer, LlvmContext llvmContext, LlvmSymbol arrayPointerLlvmSymbol, LlvmSymbol indexLlvmSymbolRaw) {
+        var indexLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, indexLlvmSymbolRaw, "i8");
         var llvmType = LlvmGeneratorUtil.getLlvmType(bootstrapTypeSymbols.getUInt8Class());
         var indexOffsetName = llvmContext.getNewTemporaryLlvmName();
         var indexPointerName = llvmContext.getNewTemporaryLlvmName();
