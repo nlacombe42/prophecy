@@ -59,4 +59,4 @@ STRING_LITERAL: '\'' ( '\\"' | ~('\r' | '\n') )*? '\'';
 TYPE_IDENTIFIER: [A-Z][a-zA-Z0-9]*;
 NON_TYPE_IDENTIFIER: [a-z][a-zA-Z0-9]*;
 
-NEWLINE: '\n' ' '*;
+NEWLINE: '\n' ('    ')*;

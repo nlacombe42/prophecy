@@ -110,4 +110,24 @@ public class ForeachIntegrationTest {
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "11\n22\n33\n44\n55\n");
     }
+
+    @Test
+    public void throw_error_when_using_tab_indentation() {
+        var prophecyCode = """
+            foreach i in [11, 22]
+            \tSystem.println(i)
+            """;
+
+        assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
+    }
+
+    @Test
+    public void throw_error_when_using_2_spaces_indentation() {
+        var prophecyCode = """
+            foreach i in [11, 22]
+              System.println(i)
+            """;
+
+        assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
+    }
 }
