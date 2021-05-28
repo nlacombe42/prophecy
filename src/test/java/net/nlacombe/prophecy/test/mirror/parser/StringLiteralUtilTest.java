@@ -24,8 +24,8 @@ public class StringLiteralUtilTest {
 
     @Test
     public void escape_multi_test() {
-        var input = "a\\tb\\rc\\nd\\\\e\\\"f";
-        var expected = "a\tb\rc\nd\\e\"f";
+        var input = "a\\tb\\rc\\nd\\\\e\\'f";
+        var expected = "a\tb\rc\nd\\e'f";
 
         var stringValue = StringLiteralUtil.getStringValue(input);
 

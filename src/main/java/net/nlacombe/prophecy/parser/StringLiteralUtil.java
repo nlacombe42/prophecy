@@ -22,7 +22,7 @@ public class StringLiteralUtil {
                 case 't' -> "\t";
                 case 'r' -> "\r";
                 case 'n' -> "\n";
-                case '\"' -> "\"";
+                case '\'' -> "'";
                 case '\\' -> "\\";
                 default -> throw new IllegalArgumentException("unknown escape sequence: \"\\" + nextChar + "\"");
             };

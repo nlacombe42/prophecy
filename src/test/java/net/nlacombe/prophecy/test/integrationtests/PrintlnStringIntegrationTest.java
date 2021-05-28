@@ -21,9 +21,9 @@ public class PrintlnStringIntegrationTest {
     @Test
     public void println_string_all_escapes() {
         var prophecyCode = """
-            System.println('newline\\ntab\\tcarriage return\\rafter carriage return. quote\\"backslash\\\\')
+            System.println('newline\\ntab\\tcarriage return\\rafter carriage return. quote\\'backslash\\\\')
             """;
-        var expectedString = "newline\ntab\tcarriage return\rafter carriage return. quote\"backslash\\";
+        var expectedString = "newline\ntab\tcarriage return\rafter carriage return. quote'backslash\\";
 
         TestUtil.testProphecyProgramOutput(prophecyCode, expectedString + "\n");
     }
