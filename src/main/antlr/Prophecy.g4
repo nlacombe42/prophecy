@@ -54,7 +54,7 @@ nonTypeIdentifier: NON_TYPE_IDENTIFIER | 'val' | 'foreach' | 'in';
 anyTypeIdentifier: TYPE_IDENTIFIER | nonTypeIdentifier;
 
 INTEGER_LITERAL: [0-9]+;
-STRING_LITERAL: '"' ( '\\"' | ~('\r' | '\n') )*? '"';
+STRING_LITERAL: '\'' ( '\\"' | ~('\r' | '\n') )*? '\'';
 
 TYPE_IDENTIFIER: [A-Z][a-zA-Z0-9]*;
 NON_TYPE_IDENTIFIER: [a-z][a-zA-Z0-9]*;

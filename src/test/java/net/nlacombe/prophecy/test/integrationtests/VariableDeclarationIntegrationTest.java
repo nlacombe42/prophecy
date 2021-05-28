@@ -11,7 +11,7 @@ public class VariableDeclarationIntegrationTest {
     @Test
     public void void_initializer_throws_error() {
         var prophecyCode = """
-            val text = System.println("line")
+            val text = System.println('line')
             """;
 
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
@@ -20,7 +20,7 @@ public class VariableDeclarationIntegrationTest {
     @Test
     public void no_error_on_string_initializer() {
         var prophecyCode = """
-            val text = "some text"
+            val text = 'some text'
             """;
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "");
@@ -56,7 +56,7 @@ public class VariableDeclarationIntegrationTest {
     @Test
     public void variable_with_keyword_name_works() {
         var prophecyCode = """
-            val val = "yes! val!"
+            val val = 'yes! val!'
             System.println(val)
             """;
 

@@ -52,7 +52,7 @@ public class ForeachIntegrationTest {
     @Test
     public void throw_error_when_foreach_has_string_expression() {
         var prophecyCode = """
-            foreach i in "test"
+            foreach i in 'test'
                 System.println(i)
             """;
 
@@ -62,7 +62,7 @@ public class ForeachIntegrationTest {
     @Test
     public void throw_error_when_foreach_has_string_array_expression() {
         var prophecyCode = """
-            foreach i in ["a", "b"]
+            foreach i in ['a', 'b']
                 System.println(i)
             """;
 
@@ -76,7 +76,7 @@ public class ForeachIntegrationTest {
                 foreach i2 in [11, 22]
                     System.println(i1)
                     System.println(i2)
-                    System.println("")
+                    System.println('')
             """;
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "1\n11\n\n1\n22\n\n2\n11\n\n2\n22\n\n");
@@ -86,14 +86,14 @@ public class ForeachIntegrationTest {
     public void prints_correctly_when_nested_foreach_with_print_statement_at_every_level() {
         var prophecyCode = """
             foreach i1 in [1, 2]
-                System.println("f1 start")
+                System.println('f1 start')
 
                 foreach i2 in [11, 22]
                     System.println(i1)
                     System.println(i2)
-                    System.println("")
+                    System.println('')
 
-                System.println("f1 end")
+                System.println('f1 end')
             """;
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "f1 start\n1\n11\n\n1\n22\n\nf1 end\nf1 start\n2\n11\n\n2\n22\n\nf1 end\n");
