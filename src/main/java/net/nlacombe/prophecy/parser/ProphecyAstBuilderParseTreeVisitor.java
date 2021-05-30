@@ -41,6 +41,9 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
 
     @Override
     public List<ProphecyAstNode> visitCall(ProphecyParser.CallContext callContext) {
+        if (callContext.methodName == null)
+            return List.of();
+
         var sourceCodeLocation = getSourceCodeLocation(callContext);
         var expressionNode = getOneExpressionNode(visit(callContext.expression()));
         var argumentNodes = visitOrEmptyList(callContext.arguments);

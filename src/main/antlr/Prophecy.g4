@@ -20,7 +20,7 @@ tokens { INDENT, DEDENT }
 }
 
 
-file: statement+;
+file: statement+ EOF;
 
 statement
     : call NEWLINE
