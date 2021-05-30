@@ -1,6 +1,13 @@
 #!./execProphecyCompilerFromSource.sh
 
-val array = [11, 22, 33, 44, 42]
+val array = [11, 22, 33]
+
+array.set(1, 42)
+
+System.println('size:')
+System.println(array.size())
+
+System.println('values:')
 
 foreach i in Array.range(0, array.size())
     System.println(array.get(i))

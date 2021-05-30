@@ -49,11 +49,12 @@ public class BootstrapTypeSymbols {
 
     private ClassSymbol getArrayClassSymbol(ClassSymbol voidClass, ClassSymbol objectClass, ClassSymbol uInt8Class) {
         var parameterType = new NamedParameterType("T");
+        var indexParameter = new VariableSymbol("index", uInt8Class);
+        var valueParameter = new VariableSymbol("value", parameterType);
         var arrayClass = ClassSymbol.newFromClassDefinition("Array", objectClass, null, List.of(parameterType));
 
-        var indexParameter = new VariableSymbol("index", uInt8Class);
         arrayClass.define(MethodSymbol.newClassMethod("get", parameterType, arrayClass, false, List.of(indexParameter)));
-
+        arrayClass.define(MethodSymbol.newClassMethod("set", voidClass, arrayClass, false, List.of(indexParameter, valueParameter)));
         arrayClass.define(MethodSymbol.newClassMethod("size", uInt8Class, arrayClass, false, List.of()));
         arrayClass.define(getInternalUInt8ArrayRangeMethodSymbol(voidClass, arrayClass, uInt8Class));
         arrayClass.define(getArrayRangeMethodSymbol(arrayClass, uInt8Class));

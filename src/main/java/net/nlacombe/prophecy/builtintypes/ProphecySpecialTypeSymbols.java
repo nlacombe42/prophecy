@@ -43,6 +43,20 @@ public class ProphecySpecialTypeSymbols {
         return (MethodSignature) methodSymbol.getSignature();
     }
 
+    public MethodSignature getGenericArraySetMethodSignature() {
+        var arrayClass = bootstrapTypeSymbols.getArrayClass();
+        var parameterType = arrayClass.getParameterTypes().get(0);
+        var methodSymbol = arrayClass.resolve(new MethodSignature("set", List.of(uInt8Class, parameterType)));
+
+        return (MethodSignature) methodSymbol.getSignature();
+    }
+
+    public MethodSignature getUInt8ArraySetMethodSignature() {
+        var methodSymbol = uInt8Array.resolve(new MethodSignature("set", List.of(uInt8Class, uInt8Class)));
+
+        return (MethodSignature) methodSymbol.getSignature();
+    }
+
     public MethodSignature getUInt8ArraySizeMethodSignature() {
         var methodSymbol = uInt8Array.resolve(new MethodSignature("size", List.of()));
 

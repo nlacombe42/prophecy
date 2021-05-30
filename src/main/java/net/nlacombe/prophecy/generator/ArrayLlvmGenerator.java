@@ -75,8 +75,7 @@ public class ArrayLlvmGenerator {
             .replace("$subTmpName", subTmpName)
             .replace("$allocSizeTmpName", allocSizeTmpName)
             .replace("$arraySizeTmpName", arraySizeTmpName)
-            .replace("$arrayTmpName", arrayLlvmName)
-            ;
+            .replace("$arrayTmpName", arrayLlvmName);
 
         WriterUtil.writeRuntimeException(writer, llvmCode);
 
@@ -87,5 +86,32 @@ public class ArrayLlvmGenerator {
         LlvmGeneratorCallUtil.generateCallToProphecyMethod(writer, llvmContext, internalArrayRangeMethodSymbol, arguments);
 
         return new LlvmSymbol(arrayLlvmType, arrayLlvmName);
+    }
+
+    public static void generateUInt8ArraySet
+        (
+            Writer writer,
+            LlvmContext llvmContext,
+            LlvmSymbol arrayPointerLlvmSymbol,
+            LlvmSymbol indexLlvmSymbolRaw,
+            LlvmSymbol valueLlvmSymbolRaw
+        ) {
+        var indexLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, indexLlvmSymbolRaw, "i8");
+        var valueLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, valueLlvmSymbolRaw, "i8");
+        var indexOffsetName = llvmContext.getNewTemporaryLlvmName();
+        var indexPointerName = llvmContext.getNewTemporaryLlvmName();
+
+        var llvmCode = """
+            $indexOffsetName = add i8 $indexName, 1 ; set value on UInt8 array start
+            $indexPointerName = getelementptr i8, i8* $arrayPointerName, i8 $indexOffsetName
+            store i8 $valueName, i8* $indexPointerName ; set value on UInt8 array end
+            """
+            .replace("$indexOffsetName", indexOffsetName)
+            .replace("$arrayPointerName", arrayPointerLlvmSymbol.getName())
+            .replace("$indexPointerName", indexPointerName)
+            .replace("$valueName", valueLlvmSymbol.getName())
+            .replace("$indexName", indexLlvmSymbol.getName());
+
+        WriterUtil.writeRuntimeException(writer, llvmCode);
     }
 }

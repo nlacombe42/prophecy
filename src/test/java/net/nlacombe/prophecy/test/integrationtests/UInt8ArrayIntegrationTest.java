@@ -75,4 +75,15 @@ public class UInt8ArrayIntegrationTest {
 
         TestUtil.testProphecyProgramOutput(prophecyCode, "4\n0\n1\n2\n3\n");
     }
+
+    @Test
+    public void set_array_value_works() {
+        var prophecyCode = """
+            val array = [11, 22, 33]
+            array.set(1, 42)
+            System.println(array.get(1))
+            """;
+
+        TestUtil.testProphecyProgramOutput(prophecyCode, "42\n");
+    }
 }

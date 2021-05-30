@@ -2,7 +2,12 @@ package net.nlacombe.prophecy.test.integrationtests;
 
 import net.nlacombe.prophecy.exception.ProphecyCompilationErrorsException;
 import net.nlacombe.prophecy.test.util.TestUtil;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -19,6 +24,18 @@ public class GeneralIntegrationTest {
             """;
 
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
+    }
+
+    @Disabled
+    @Test
+    public void test_test_file() {
+        try {
+            var prophecyCode = Files.readString(Path.of("./test.prophecy"));
+
+            TestUtil.testProphecyProgramOutput(prophecyCode, "");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

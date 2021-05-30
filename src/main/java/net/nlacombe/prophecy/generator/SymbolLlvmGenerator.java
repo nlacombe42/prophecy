@@ -105,6 +105,7 @@ public class SymbolLlvmGenerator {
     private List<MethodSignature> getSpecialInlineMethodSignatures() {
         return List.of(
             prophecySpecialTypeSymbols.getUInt8ArrayGetMethodSignature(),
+            prophecySpecialTypeSymbols.getGenericArraySetMethodSignature(),
             prophecySpecialTypeSymbols.getUInt8ArraySizeMethodSignature(),
             prophecySpecialTypeSymbols.getArrayRangeMethodSignature()
         );

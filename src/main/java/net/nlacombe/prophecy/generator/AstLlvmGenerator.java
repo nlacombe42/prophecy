@@ -211,7 +211,14 @@ public class AstLlvmGenerator {
                 return ArrayLlvmGenerator.generateUInt8ArrayGet(writer, llvmContext, arrayPointerLlvmSymbol, indexLlvmSymbol);
             } else if (specialTypeSymbols.getUInt8ArraySizeMethodSignature().equals(methodSignature))
                 return ArrayLlvmGenerator.generateUInt8ArraySize(writer, llvmContext, arrayPointerLlvmSymbol);
-            else
+            else if (specialTypeSymbols.getUInt8ArraySetMethodSignature().equals(methodSignature)) {
+                var indexLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, arguments.get(0));
+                var valueLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, arguments.get(1));
+
+                ArrayLlvmGenerator.generateUInt8ArraySet(writer, llvmContext, arrayPointerLlvmSymbol, indexLlvmSymbol, valueLlvmSymbol);
+
+                return null;
+            } else
                 throw new ProphecyCompilerException("llvm generator has no implementation for this Array<UInt8> method: " + methodSignature);
         } else if (Type.sameType(expressionType, bootstrapTypeSymbols.getArrayClass())) {
             if (specialTypeSymbols.getArrayRangeMethodSignature().equals(methodSignature)) {
