@@ -2,6 +2,7 @@ package net.nlacombe.prophecy.parser;
 
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyBinaryOperatorArithmeticAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
@@ -17,11 +18,11 @@ import net.nlacombe.prophecy.reporting.BuildMessageService;
 import net.nlacombe.prophecy.reporting.SourceCodeLocation;
 import net.nlacombe.prophecy.util.CollectionUtil;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.Token;
 import org.apache.commons.collections4.ListUtils;
 
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List<ProphecyAstNode>> {
@@ -70,6 +71,17 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
             .collect(Collectors.toList());
 
         return List.of(new ProphecyCallAstNode(sourceCodeLocation, expressionNode, selectionCallExpressionContext.methodName.getText(), expressionArgumentNodes));
+    }
+
+    @Override
+    public List<ProphecyAstNode> visitBinaryArithmeticsExpression(ProphecyParser.BinaryArithmeticsExpressionContext binaryArithmeticsExpressionContext) {
+        var sourceCodeLocation = getSourceCodeLocation(binaryArithmeticsExpressionContext);
+        var leftExpressionNode = getOneExpressionNode(visit(binaryArithmeticsExpressionContext.left));
+        var rightExpressionNode = getOneExpressionNode(visit(binaryArithmeticsExpressionContext.right));
+        var operatorText = binaryArithmeticsExpressionContext.operator.getText();
+        var operationType = ProphecyBinaryOperatorArithmeticAstNode.OperationType.fromOperatorSymbol(operatorText.trim());
+
+        return List.of(new ProphecyBinaryOperatorArithmeticAstNode(sourceCodeLocation, operationType, leftExpressionNode, rightExpressionNode));
     }
 
     @Override
@@ -183,11 +195,15 @@ public class ProphecyAstBuilderParseTreeVisitor extends ProphecyBaseVisitor<List
         var lastToken = parserRuleContext.stop;
 
         if (lastToken == null)
-            return SourceCodeLocation.fromPosition(filePath, firstToken.getLine(), firstToken.getCharPositionInLine() + 1);
+            return getSourceCodeLocation(firstToken);
         else
             return SourceCodeLocation.fromRange(filePath,
                 firstToken.getLine(), firstToken.getCharPositionInLine() + 1,
                 lastToken.getLine(), lastToken.getCharPositionInLine() + lastToken.getText().length());
+    }
+
+    private SourceCodeLocation getSourceCodeLocation(Token token) {
+        return SourceCodeLocation.fromPosition(filePath, token.getLine(), token.getCharPositionInLine() + 1);
     }
 
     private List<ProphecyAstNode> visitOrEmptyList(ParserRuleContext parserRuleContext) {

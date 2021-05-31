@@ -3,6 +3,7 @@ package net.nlacombe.prophecy.analyser.type;
 import net.nlacombe.prophecy.ast.ProphecyAstVisitor;
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyBinaryOperatorArithmeticAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
@@ -108,6 +109,41 @@ public class TypeAnalyserAstVisitor extends ProphecyAstVisitor<Type> {
         node.setEvaluatedType(returnType);
 
         return symbol.getType();
+    }
+
+    @Override
+    protected Type visitProphecyBinaryOperatorArithmeticAstNode(ProphecyBinaryOperatorArithmeticAstNode node) {
+        visitChildren(node);
+
+        var uInt8Class = bootstrapTypeSymbols.getUInt8Class();
+        var leftExpressionNode = node.getLeft();
+        var rightExpressionNode = node.getRight();
+        var leftType = leftExpressionNode.getEvaluatedType();
+        var rightType = rightExpressionNode.getEvaluatedType();
+
+        if (leftType == null || rightType == null) {
+            if (buildMessageService.hasErrorBuildMessage())
+                return null;
+            else
+                throw new ProphecyCompilerException("missing type analysis or error logging");
+        }
+
+
+        if (!Type.sameType(leftType, uInt8Class)) {
+            buildMessageService.error(leftExpressionNode.getDefinitionSourceCodeLocation(), "binary operations can only be done on UInt8");
+
+            return null;
+        }
+
+        if (!Type.sameType(rightType, uInt8Class)) {
+            buildMessageService.error(rightExpressionNode.getDefinitionSourceCodeLocation(), "binary operations can only be done on UInt8");
+
+            return null;
+        }
+
+        node.setEvaluatedType(uInt8Class);
+
+        return node.getEvaluatedType();
     }
 
     @Override

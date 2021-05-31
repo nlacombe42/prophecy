@@ -2,6 +2,7 @@ package net.nlacombe.prophecy.ast;
 
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyBinaryOperatorArithmeticAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyFileAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
@@ -47,6 +48,7 @@ public abstract class ProphecyAstVisitor<ResultType> extends AbstractVisitor<Pro
         handlersMap.put(ProphecyVariableDeclarationAstNode.class, node -> visitVariableDeclarationAstNode((ProphecyVariableDeclarationAstNode) node));
         handlersMap.put(ProphecyIdentifierExpressionAstNode.class, node -> visitProphecyIdentifierExpressionAstNode((ProphecyIdentifierExpressionAstNode) node));
         handlersMap.put(ProphecyForeachAstNode.class, node -> visitProphecyForeachAstNode((ProphecyForeachAstNode) node));
+        handlersMap.put(ProphecyBinaryOperatorArithmeticAstNode.class, node -> visitProphecyBinaryOperatorArithmeticAstNode((ProphecyBinaryOperatorArithmeticAstNode) node));
 
         return handlersMap;
     }
@@ -75,6 +77,10 @@ public abstract class ProphecyAstVisitor<ResultType> extends AbstractVisitor<Pro
     }
 
     protected ResultType visitProphecyForeachAstNode(ProphecyForeachAstNode node) {
+        return visitChildren(node);
+    }
+
+    protected ResultType visitProphecyBinaryOperatorArithmeticAstNode(ProphecyBinaryOperatorArithmeticAstNode node) {
         return visitChildren(node);
     }
 }

@@ -2,6 +2,7 @@ package net.nlacombe.prophecy.generator;
 
 import net.nlacombe.prophecy.ast.node.ProphecyArrayLiteralAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyBinaryOperatorArithmeticAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyCallAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyExpressionAstNode;
 import net.nlacombe.prophecy.ast.node.ProphecyForeachAstNode;
@@ -60,6 +61,7 @@ public class AstLlvmGenerator {
         generatorsByAstNodeType.put(ProphecyStringLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyStringLiteralAstNode) node));
         generatorsByAstNodeType.put(ProphecyArrayLiteralAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyArrayLiteralAstNode) node));
         generatorsByAstNodeType.put(ProphecyIdentifierExpressionAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyIdentifierExpressionAstNode) node));
+        generatorsByAstNodeType.put(ProphecyBinaryOperatorArithmeticAstNode.class, node -> AstLlvmGenerator.generate(writer, llvmContext, (ProphecyBinaryOperatorArithmeticAstNode) node));
 
         var generator = generatorsByAstNodeType.get(astNodeClass);
 
@@ -120,8 +122,7 @@ public class AstLlvmGenerator {
             .replace("$conditionBoolean", conditionBoolean)
             .replace("$indexValue2", indexValue2)
             .replace("$arrayName", arrayPointer.getName())
-            .replace("$arrayValuePointer", arrayValuePointer)
-            ;
+            .replace("$arrayValuePointer", arrayValuePointer);
 
         WriterUtil.writeRuntimeException(writer, llvmCodePart1);
         LlvmGeneratorPointerUtil.wrap(writer, llvmContext, new LlvmSymbol("i8*", arrayValuePointer), LlvmGeneratorUtil.getLlvmVariableName(astNode.getVariableName()));
@@ -141,8 +142,7 @@ public class AstLlvmGenerator {
             .replace("$indexName", indexName)
             .replace("$foreachName", foreachName)
             .replace("$indexValue2", indexValue2)
-            .replace("$newIndexValue", llvmContext.getNewTemporaryLlvmName())
-            ;
+            .replace("$newIndexValue", llvmContext.getNewTemporaryLlvmName());
 
         WriterUtil.writeRuntimeException(writer, llvmCodePart2);
 
@@ -166,6 +166,49 @@ public class AstLlvmGenerator {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyBinaryOperatorArithmeticAstNode astNode) {
+        return switch (astNode.getOperationType()) {
+            case ADDITION -> generateAddition(writer, llvmContext, astNode);
+            case SUBTRACTION -> generateSubtraction(writer, llvmContext, astNode);
+        };
+    }
+
+    private static LlvmSymbol generateAddition(Writer writer, LlvmContext llvmContext, ProphecyBinaryOperatorArithmeticAstNode astNode) {
+        var llvmType = LlvmGeneratorUtil.getLlvmType(astNode.getEvaluatedType());
+        var leftExpressionLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, generate(writer, llvmContext, astNode.getLeft()), "i8");
+        var rightExpressionLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, generate(writer, llvmContext, astNode.getRight()), "i8");
+        var returnValueName = llvmContext.getNewTemporaryLlvmName();
+
+        var llvmCode = "$returnValueName = add $llvmType $leftValue, $rightValue ; addition binary operation ast node\n"
+            .replace("$returnValueName", returnValueName)
+            .replace("$llvmType", llvmType)
+            .replace("$leftValue", leftExpressionLlvmSymbol.getName())
+            .replace("$rightValue", "" + rightExpressionLlvmSymbol.getName())
+            ;
+
+        WriterUtil.writeRuntimeException(writer, llvmCode);
+
+        return new LlvmSymbol(llvmType, returnValueName);
+    }
+
+    private static LlvmSymbol generateSubtraction(Writer writer, LlvmContext llvmContext, ProphecyBinaryOperatorArithmeticAstNode astNode) {
+        var llvmType = LlvmGeneratorUtil.getLlvmType(astNode.getEvaluatedType());
+        var leftExpressionLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, generate(writer, llvmContext, astNode.getLeft()), "i8");
+        var rightExpressionLlvmSymbol = LlvmGeneratorPointerUtil.convert(writer, llvmContext, generate(writer, llvmContext, astNode.getRight()), "i8");
+        var returnValueName = llvmContext.getNewTemporaryLlvmName();
+
+        var llvmCode = "$returnValueName = sub $llvmType $leftValue, $rightValue ; subtraction binary operation ast node\n"
+            .replace("$returnValueName", returnValueName)
+            .replace("$llvmType", llvmType)
+            .replace("$leftValue", leftExpressionLlvmSymbol.getName())
+            .replace("$rightValue", "" + rightExpressionLlvmSymbol.getName())
+            ;
+
+        WriterUtil.writeRuntimeException(writer, llvmCode);
+
+        return new LlvmSymbol(llvmType, returnValueName);
     }
 
     private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyStringLiteralAstNode astNode) {

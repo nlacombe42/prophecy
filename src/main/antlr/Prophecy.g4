@@ -40,6 +40,7 @@ expressionList: expression (', ' expression)*;
 
 expression
     : literal #literalExpression
+    | left=expression operator=(' + ' | ' - ') right=expression #binaryArithmeticsExpression
     | expression '.' methodName=nonTypeIdentifier '(' arguments=expressionList? ')' #selectionCallExpression
     | identifier=anyTypeIdentifier #identifierExpression
     ;

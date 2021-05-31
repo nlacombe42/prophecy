@@ -1,13 +1,8 @@
 #!./execProphecyCompilerFromSource.sh
 
-val array = [11, 22, 33]
+val left = 42
 
-array.set(1, 42)
-
-System.println('size:')
-System.println(array.size())
-
-System.println('values:')
-
-foreach i in Array.range(0, array.size())
-    System.println(array.get(i))
+System.println(left + 2)
+System.println(left - 5)
+System.println(3 + 5)
+System.println(7 - 2)
