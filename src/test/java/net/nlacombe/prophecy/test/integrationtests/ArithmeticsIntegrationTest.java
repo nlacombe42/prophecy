@@ -68,4 +68,15 @@ public class ArithmeticsIntegrationTest {
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
     }
 
+    @Test
+    public void adding_results_from_calls_works() {
+        var prophecyCode = """
+            val leftArray = [1, 2]
+            val rightArray = [1, 2, 3]
+            System.println(leftArray.size() + rightArray.size())
+            """;
+
+        TestUtil.testProphecyProgramOutput(prophecyCode, "5\n");
+    }
+
 }
