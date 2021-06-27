@@ -16,6 +16,7 @@ import net.nlacombe.prophecy.exception.ProphecyCompilerException;
 import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.symboltable.domain.symbol.VariableSymbol;
 import net.nlacombe.prophecy.util.WriterUtil;
 import org.apache.commons.collections4.ListUtils;
 
@@ -74,13 +75,18 @@ public class AstLlvmGenerator {
     private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyIdentifierExpressionAstNode astNode) {
         var llvmType = LlvmGeneratorUtil.getLlvmReferenceFromType(astNode.getEvaluatedType());
 
-        return new LlvmSymbol(llvmType, LlvmGeneratorUtil.getLlvmVariableName(astNode.getSymbol().getName()));
+        if (!(astNode.getSymbol() instanceof VariableSymbol))
+            throw new ProphecyCompilerException("can only generate llvm code for variable symbol identifier: " + astNode.getSymbol());
+
+        var variableSymbol = (VariableSymbol) astNode.getSymbol();
+
+        return new LlvmSymbol(llvmType, llvmContext.getLlvmVariableName(variableSymbol));
     }
 
     private static LlvmSymbol generate(Writer writer, LlvmContext llvmContext, ProphecyVariableDeclarationAstNode astNode) {
         var initializerLlvmSymbol = AstLlvmGenerator.generate(writer, llvmContext, astNode.getInitializer());
         var pointer = LlvmGeneratorPointerUtil.getPointer(writer, llvmContext, initializerLlvmSymbol);
-        var llvmVariableName = LlvmGeneratorUtil.getLlvmVariableName(astNode.getVariableName());
+        var llvmVariableName = llvmContext.getLlvmVariableName(astNode.getVariableSymbol());
 
         return LlvmGeneratorPointerUtil.wrap(writer, llvmContext, pointer, llvmVariableName);
     }
@@ -125,7 +131,7 @@ public class AstLlvmGenerator {
             .replace("$arrayValuePointer", arrayValuePointer);
 
         WriterUtil.writeRuntimeException(writer, llvmCodePart1);
-        LlvmGeneratorPointerUtil.wrap(writer, llvmContext, new LlvmSymbol("i8*", arrayValuePointer), LlvmGeneratorUtil.getLlvmVariableName(astNode.getVariableName()));
+        LlvmGeneratorPointerUtil.wrap(writer, llvmContext, new LlvmSymbol("i8*", arrayValuePointer), llvmContext.getLlvmVariableName(astNode.getVariableSymbol()));
         WriterUtil.writeRuntimeException(writer, "; end of $foreachName part 1\n".replace("$foreachName", foreachName));
 
         astNode.getBlock().forEach(node -> generate(writer, llvmContext, node));

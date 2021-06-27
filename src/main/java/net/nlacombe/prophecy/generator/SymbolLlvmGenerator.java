@@ -39,44 +39,40 @@ public class SymbolLlvmGenerator {
     }
 
     public void generate(Writer writer, MethodSymbol methodSymbol) {
-        try {
-            var methodSignature = methodSymbol.getSignature();
+        var methodSignature = methodSymbol.getSignature();
 
-            if (getSpecialInlineMethodSignatures().contains(methodSignature))
-                return;
+        if (getSpecialInlineMethodSignatures().contains(methodSignature))
+            return;
 
-            var customLlvmCodeByMethodSignature = getCustomLlvmCodeByMethodSignature();
-            var customLlvmCode = customLlvmCodeByMethodSignature.get(methodSignature);
-            String methodLlvmCode;
+        var customLlvmCodeByMethodSignature = getCustomLlvmCodeByMethodSignature();
+        var customLlvmCode = customLlvmCodeByMethodSignature.get(methodSignature);
+        var methodLlvmCode = customLlvmCode != null ? customLlvmCode : getLlvmCodeForNonCustomNonInlineMethod(methodSymbol);
 
-            if (customLlvmCode != null) {
-                methodLlvmCode = customLlvmCode;
-            } else {
-                var methodAstNode = methodSymbol.getDefinitionAstNode();
-                var fileAstNode = (ProphecyFileAstNode) methodAstNode;
-                var llvmTemporaryNameGenerator = new LlvmContext();
+        generate(writer, methodSymbol, methodLlvmCode);
+        WriterUtil.writeRuntimeException(writer, "\n");
+    }
 
-                try (var stringWriter = new StringWriter()) {
-                    stringWriter.write("entry:\n");
+    private String getLlvmCodeForNonCustomNonInlineMethod(MethodSymbol methodSymbol) {
+        var methodAstNode = methodSymbol.getDefinitionAstNode();
+        var fileAstNode = (ProphecyFileAstNode) methodAstNode;
+        var llvmContext = new LlvmContext(LlvmGeneratorUtil.getLlvmNameBySymbol(fileAstNode.getStatements()));
 
-                    fileAstNode.getStatements().forEach(statementAstNode -> {
-                        stringWriter.write("; " + statementAstNode.toString().replaceAll("\n", "; ") + "\n");
-                        stringWriter.write("; start of statement\n");
-                        AstLlvmGenerator.generate(stringWriter, llvmTemporaryNameGenerator, statementAstNode);
-                        stringWriter.write("; end of statement\n\n");
-                    });
+        try (var stringWriter = new StringWriter()) {
+            stringWriter.write("entry:\n");
 
-                    if (bootstrapTypeSymbols.getVoidClass().equals(methodSymbol.getType()))
-                        stringWriter.write("ret void\n");
+            fileAstNode.getStatements().forEach(statementAstNode -> {
+                stringWriter.write("; " + statementAstNode.toString().replaceAll("\n", "; ") + "\n");
+                stringWriter.write("; start of statement\n");
+                AstLlvmGenerator.generate(stringWriter, llvmContext, statementAstNode);
+                stringWriter.write("; end of statement\n\n");
+            });
 
-                    methodLlvmCode = stringWriter.toString();
-                }
-            }
+            if (bootstrapTypeSymbols.getVoidClass().equals(methodSymbol.getType()))
+                stringWriter.write("ret void\n");
 
-            generate(writer, methodSymbol, methodLlvmCode);
-            WriterUtil.writeRuntimeException(writer, "\n");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return stringWriter.toString();
+        } catch (IOException exception) {
+            throw new RuntimeException(exception);
         }
     }
 

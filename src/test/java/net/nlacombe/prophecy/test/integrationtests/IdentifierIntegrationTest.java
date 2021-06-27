@@ -58,4 +58,17 @@ public class IdentifierIntegrationTest {
 
         assertThrows(ProphecyCompilationErrorsException.class, () -> TestUtil.testProphecyProgramOutput(prophecyCode, ""));
     }
+
+    @Test
+    public void using_same_variable_name_in_different_foreach_loop_works() {
+        var prophecyCode = """
+            foreach i in Array.range(0, 2)
+                System.println(i)
+
+            foreach i in Array.range(0, 3)
+                System.println(i)
+            """;
+
+        TestUtil.testProphecyProgramOutput(prophecyCode, "0\n1\n0\n1\n2\n");
+    }
 }

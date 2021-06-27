@@ -1,5 +1,7 @@
 package net.nlacombe.prophecy.generator;
 
+import net.nlacombe.prophecy.ast.node.ProphecyAstNode;
+import net.nlacombe.prophecy.ast.node.ProphecyIdentifierExpressionAstNode;
 import net.nlacombe.prophecy.builtintypes.BootstrapTypeSymbols;
 import net.nlacombe.prophecy.builtintypes.ProphecySpecialTypeSymbols;
 import net.nlacombe.prophecy.symboltable.domain.signature.MethodSignature;
@@ -7,11 +9,18 @@ import net.nlacombe.prophecy.symboltable.domain.Type;
 import net.nlacombe.prophecy.symboltable.domain.symbol.ClassSymbol;
 import net.nlacombe.prophecy.symboltable.domain.symbol.MethodSymbol;
 import net.nlacombe.prophecy.exception.ProphecyCompilerException;
+import net.nlacombe.prophecy.symboltable.domain.symbol.Symbol;
+import net.nlacombe.prophecy.symboltable.domain.symbol.VariableSymbol;
 import org.apache.commons.collections4.ListUtils;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class LlvmGeneratorUtil {
 
@@ -31,10 +40,6 @@ public class LlvmGeneratorUtil {
 
     public static String getLlvmFunctionName(MethodSymbol methodSymbol) {
         return "@" + getLlvmNameFromNameParts(getFunctionNameParts(methodSymbol));
-    }
-
-    public static String getLlvmVariableName(String variableName) {
-        return "%" + variableName;
     }
 
     public static String toLlvmStringLiteral(String stringValue) {
@@ -105,5 +110,50 @@ public class LlvmGeneratorUtil {
 
     private static String getLlvmNamePartSeparator() {
         return "$";
+    }
+
+    public static List<VariableSymbol> getAllVariableSymbols(List<ProphecyAstNode> astNodes) {
+        return astNodes.stream()
+            .flatMap(astNode -> getAllSymbols(astNode).stream())
+            .filter(symbol -> symbol instanceof VariableSymbol)
+            .map(symbol -> (VariableSymbol) symbol)
+            .distinct()
+            .collect(Collectors.toList());
+    }
+
+    private static List<Symbol> getAllSymbols(ProphecyAstNode astNode) {
+        var symbols = new LinkedList<Symbol>();
+
+        if (astNode instanceof ProphecyIdentifierExpressionAstNode)
+            symbols.add(((ProphecyIdentifierExpressionAstNode) astNode).getSymbol());
+
+        symbols.addAll(
+            astNode.getChildren().stream()
+                .flatMap(astNodeStream -> getAllSymbols(astNodeStream).stream())
+                .collect(Collectors.toList())
+        );
+
+        return symbols;
+    }
+
+    public static Map<VariableSymbol, String> getLlvmNameBySymbol(List<ProphecyAstNode> statements) {
+        var allVariableSymbolsByName = LlvmGeneratorUtil.getAllVariableSymbols(statements).stream()
+            .collect(Collectors.groupingBy(Symbol::getName, Collectors.mapping(Function.identity(), Collectors.toList())));
+
+        return allVariableSymbolsByName.entrySet().stream()
+            .flatMap(entry -> {
+                var symbols = entry.getValue();
+
+                if (symbols.size() == 1)
+                    return Stream.of(Map.entry("%" + entry.getKey(), symbols.get(0)));
+
+                return IntStream.range(0, symbols.size())
+                    .mapToObj(index -> {
+                        var symbol = symbols.get(index);
+
+                        return Map.entry("%" + symbol.getName() + getLlvmNamePartSeparator() + (index + 1), symbol);
+                    });
+            })
+            .collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
     }
 }

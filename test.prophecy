@@ -1,8 +1,19 @@
 #!./execProphecyCompilerFromSource.sh
 
-val left = 42
+val leftArray = [1, 2, 3, 4]
+val rightArray = [11, 22, 33]
 
-System.println(left + 2)
-System.println(left - 5)
-System.println(3 + 5)
-System.println(7 - 2)
+
+val resultArray = Array.range(0, leftArray.size() + rightArray.size())
+
+foreach i in Array.range(0, leftArray.size())
+    resultArray.set(i, leftArray.get(i))
+
+foreach i in Array.range(0, rightArray.size())
+    resultArray.set(i + leftArray.size(), rightArray.get(i))
+
+System.println('size: ')
+System.println(resultArray.size())
+
+foreach i in Array.range(0, resultArray.size())
+    System.println(resultArray.get(i))
