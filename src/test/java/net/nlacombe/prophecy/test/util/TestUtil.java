@@ -20,24 +20,12 @@ public class TestUtil {
 
             var compiler = new ProphecyCompiler(inputStream, null, outputStream);
             var compilationResult = compiler.compile();
-
             var programOutput = runLlvmCodeAndGetOutput(llvmCodeFilePath);
 
-            if (!expectedOutput.equals(programOutput)) {
-                var message = "";
-                message += "Expected program output:\n";
-                message += "<<<" + programOutput +">>>\n";
-                message += "to be equal to:\n";
-                message += "<<<" + expectedOutput +">>>\n";
-                message += "ast root:\n";
-                message += "<<<\n" + compilationResult.getAstRoot() +"\n>>>\n";
-                message += "global scope:\n";
-                message += "<<<\n" + compilationResult.getGlobalScope() +"\n>>>\n";
-
-                throw new RuntimeException(message);
-            }
+            if (!expectedOutput.equals(programOutput))
+                throw new ProphecyIntegrationTestException(expectedOutput, programOutput, compilationResult.getAstRoot(), compilationResult.getGlobalScope(), llvmCodeFilePath);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            throw new ProphecyIntegrationTestException(e);
         }
     }
 
@@ -45,7 +33,13 @@ public class TestUtil {
         var process = Runtime.getRuntime().exec("lli " + llvmCodeFilePath);
         process.onExit().join();
 
-        return IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+        var stdout = IOUtils.toString(process.getInputStream(), StandardCharsets.UTF_8);
+        var stderr = IOUtils.toString(process.getErrorStream(), StandardCharsets.UTF_8);
+
+        if (process.exitValue() == 1)
+            throw new LliException(llvmCodeFilePath, stdout, stderr);
+
+        return stdout;
     }
 
 }
